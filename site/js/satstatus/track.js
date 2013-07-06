@@ -1,4 +1,17 @@
 
+
+// loads the satellite described by the TLE file at path
+// when loaded, creates an associated SatelliteTrace object.
+function setupSatellite(path) {
+	var req = new XMLHttpRequest();
+	req.onload = function() {
+		var sat = new SatelliteTrace(this.responseText);
+	};
+	req.open('GET', path);
+	req.overrideMimeType('text/plain');
+	req.send();
+}
+
 // consider populating the .points array of SatelliteTrace with objects with
 // labeled member properties, rather than just pushing the arrays on.
 // This approach also offers a solution to how to store display geometry info:
@@ -109,3 +122,6 @@ function log(txt) {
 	p.appendChild(t);
 	d.appendChild(p);
 }
+
+window.setInterval(periodicUpdateFunc, 3000);
+setupSatellite('./tle/test.tle');
