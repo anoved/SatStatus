@@ -16,6 +16,25 @@ function TracePoint() {
 	this.timestamp = timestamp;
 }
 
+
+/*
+ * SatelliteTrace
+ * 
+ * This constructor defines a draft object intended to manage orbit information
+ * about a single satellite. It is initialized with a two-line element set (TLE)
+ * representing the satellite's last known location and velocity. Its primary
+ * member is an array containing the satellite's coordinates at a sequence of
+ * points in time (see TracePoint above for prospective details). This array
+ * informs the rendering of the satellite's path on the displays (possibly
+ * utilizing additional geometry information stored in the TracePoint object).
+ * Elements are added to the array with the .update method, which accepts a Date
+ * argument specificing the time of the point to calculate (defaults to "now").
+ * (Logically, the update timestamp should always be later than any in array.)
+ * Each instance of the object is configured to run its update method in
+ * response to 'updateOrbit' events, which are assumed to have a .timestamp
+ * member. This event handler mechanism allows multiple SatelliteTrace objects
+ * to updated by dispatching a single 'updateOrbit' event.
+ */
 function SatelliteTrace(tle) {
 	if (typeof(tle) === 'undefined') {
 		tle = "1 25544U 98067A   13181.93746528  .00008251  00000-0  14965-3 0   959\n2 25544  51.6493  40.1834 0008920 113.3890  83.5804 15.50498371836833";
