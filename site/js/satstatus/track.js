@@ -13,7 +13,7 @@ function TracePoint() {
 	this.z = loc[2];
 	
 	// timestamp of this point (Julian, unix, minutes from epoch?)
-	this.timestamp = timestamp;
+	this.time = time;
 }
 
 
@@ -31,9 +31,9 @@ function TracePoint() {
  * argument specificing the time of the point to calculate (defaults to "now").
  * (Logically, the update timestamp should always be later than any in array.)
  * Each instance of the object is configured to run its update method in
- * response to 'updateOrbit' events, which are assumed to have a .timestamp
+ * response to 'updateOrbit' events, which are assumed to have a .time
  * member. This event handler mechanism allows multiple SatelliteTrace objects
- * to updated by dispatching a single 'updateOrbit' event.
+ * to be updated by dispatching a single 'updateOrbit' event.
  */
 function SatelliteTrace(tle) {
 	if (typeof(tle) === 'undefined') {
@@ -83,7 +83,7 @@ function SatelliteTrace(tle) {
 	// updateHandler is specifically an event handler, whereas update could be called directly.
 	this.updateHandler = function(event) {
 		// issue is that in an event handler, "this" refers to event, rather than method's parent object...
-		this.update(event.timestamp);
+		this.update(event.time);
 	}
 	
 	// appending .bind(this) to the event handler function overrides any event-based "this" definition
@@ -92,9 +92,10 @@ function SatelliteTrace(tle) {
 
 // when invoked, this function will trigger a timestamped "updateOrbit" event
 // that all SatelliteTrace objects will respond to (by running their update() method)
+// Note: using 'time' for member name to avoid confusion with native .timeStamp
+// member, whose resolution appears to vary among browsers tested.
 function periodicUpdateFunc() {
-	var timestamp = new Date;
-	var timestampedEvent = new CustomEvent("updateOrbit", {"timestamp": timestamp});
+	var timestampedEvent = new CustomEvent("updateOrbit", {"time": new Date});
 	window.dispatchEvent(timestampedEvent);
 }
 
