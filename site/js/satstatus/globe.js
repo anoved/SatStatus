@@ -20,8 +20,8 @@ function init() {
 	scene = new THREE.Scene();
 	populateScene();
 	
-	// Renderer
-	renderer = new THREE.WebGLRenderer();
+	// Renderer (.CanvasRenderer or .WebGLRenderer)
+	renderer = new THREE.CanvasRenderer();
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	
 	// Stats (stats.setMode(1) for MS/frame instead of FPS)
