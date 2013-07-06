@@ -92,10 +92,12 @@ function SatelliteTrace(tle) {
 
 // when invoked, this function will trigger a timestamped "updateOrbit" event
 // that all SatelliteTrace objects will respond to (by running their update() method)
+// Run it periodically with something like window.setInterval(periodicUpdateFunc, 1000);
 // Note: using 'time' for member name to avoid confusion with native .timeStamp
 // member, whose resolution appears to vary among browsers tested.
 function periodicUpdateFunc() {
-	var timestampedEvent = new CustomEvent("updateOrbit", {"time": new Date});
+	var nowTime = new Date;
+	var timestampedEvent = new CustomEvent("updateOrbit", {"time": nowTime});
 	window.dispatchEvent(timestampedEvent);
 }
 
