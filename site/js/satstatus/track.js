@@ -1,4 +1,21 @@
 
+// consider populating the .points array of SatelliteTrace with objects with
+// labeled member properties, rather than just pushing the arrays on.
+// This approach also offers a solution to how to store display geometry info:
+// as another member of this object. (For best performance, I'm thinking there
+// ought to be a way to "shift/push" points onto a Three.js line, just like an
+// array operation - rather than recreating the whole orbit path each frame.)
+function TracePoint() {
+	
+	// ECF coordinates of this point
+	this.x = loc[0];
+	this.y = loc[1];
+	this.z = loc[2];
+	
+	// timestamp of this point (Julian, unix, minutes from epoch?)
+	this.timestamp = timestamp;
+}
+
 function SatelliteTrace(tle) {
 	if (typeof(tle) === 'undefined') {
 		tle = "1 25544U 98067A   13181.93746528  .00008251  00000-0  14965-3 0   959\n2 25544  51.6493  40.1834 0008920 113.3890  83.5804 15.50498371836833";
