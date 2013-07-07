@@ -115,7 +115,7 @@ function populateScene() {
 	var mesh = new THREE.Mesh(geometry, material);
 	scene.add( mesh );
 	
-	var lc = new THREE.LineBasicMaterial({color: 0x000000});
+	var lc = new THREE.LineBasicMaterial({color: 0x999999});
 	for (var i = 0; i < points.length; i++) {
 		var pg = new THREE.Geometry();
 		pg.vertices.push(new THREE.Vector3(0, 0, 0));
