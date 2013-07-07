@@ -6,8 +6,8 @@ animate();
 function init() {
 	
 	// Camera
-	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
-	camera.position.set(0, 0, 350);
+	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+	resetCamera();
 	
 	// Controls
 	controls = new THREE.OrbitControls(camera);
@@ -131,6 +131,15 @@ function populateScene() {
 	scene.add(light);
 	light = new THREE.AmbientLight(0x202020);
 	scene.add(light);
+}
+
+/*
+ * resetCamera
+ * 
+ * Restore initial camera position. Changing the position triggers update.
+ */
+function resetCamera() {
+	camera.position.set(0, 0, 350);
 }
 
 function animate() {
