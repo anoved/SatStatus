@@ -59,6 +59,33 @@ function SatelliteTrace(tle) {
 	// populate initial point set
 	this.points = new Array;
 	
+	this.populate = function() {
+		
+		var now = new Date;
+		
+		// m is minutes - basically two orbits, ending now
+		for (var m = 180; m >= 0; m -= 2) {
+			
+			// minute offset in milliseconds
+			var ms = m * 60000;
+			
+			var date = new Date(now.getTime() - ms);
+			
+		var y = date.getUTCFullYear();
+		var mo = date.getUTCMonth();
+		var d = date.getUTCDate();
+		var h = date.getUTCHours();
+		var mi = date.getUTCMinutes();
+		var s = date.getUTCSeconds();
+					
+			var pv_eci = satellite.propagate(this.satRec, y, mo, d, h, mi, s);
+			var sidereal = satellite.gstime_from_date(y, mo, d, h, mi, s);
+			var p_ecf = satellite.eci_to_ecf(pv_eci[0], sidereal);
+			this.points.push(p_ecf);
+			log(p_ecf);
+		}
+	}
+	
 	// this method shifts an old point out and pushes a new one on.
 	this.update = function(date) {
 		
@@ -82,10 +109,10 @@ function SatelliteTrace(tle) {
 		var position_ecf = satellite.eci_to_ecf(position_velocity_eci[0], gmst);
 		
 		// drop the oldest point and add this one
-		if (this.points.length == 3) {
+		//if (this.points.length == 3) {
 			// (don't start dropping points until we've got a couple)
-			this.points.shift();
-		}
+		//	this.points.shift();
+		//}
 		this.points.push(position_ecf);
 		
 		log(position_ecf);
@@ -101,6 +128,7 @@ function SatelliteTrace(tle) {
 	
 	// appending .bind(this) to the event handler function overrides any event-based "this" definition
 	window.addEventListener("updateOrbit", this.updateHandler.bind(this), false);
+	this.populate();
 }
 
 // when invoked, this function will trigger a timestamped "updateOrbit" event
@@ -123,5 +151,5 @@ function log(txt) {
 	d.appendChild(p);
 }
 
-window.setInterval(periodicUpdateFunc, 3000);
-setupSatellite('./tle/test.tle');
+//window.setInterval(periodicUpdateFunc, 3000);
+setupSatellite('tle/test.tle');
