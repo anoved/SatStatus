@@ -137,13 +137,13 @@ function populateScene() {
 		scene.add(pl);
 	}
 	
-	// Note: globe and light orientation are not necessarily
-	// correctly matched to solar position and ECI orbit points.
-	var light = new THREE.PointLight(0xFFFFFF);
-	light.position.set(2000, 0, 0);
-	scene.add(light);
-	light = new THREE.AmbientLight(0x202020);
-	scene.add(light);
+	// geocentric sunlight (model & position according to current timestamp) 
+	var sunlight = new THREE.PointLight(0xFFFFFF);
+	sunlight.position.set(2000, 0, 0);
+	scene.add(sunlight);
+	
+	// low ambient light ensures the "night side" is visible.
+	scene.add(new THREE.AmbientLight(0x202020));
 }
 
 /*
