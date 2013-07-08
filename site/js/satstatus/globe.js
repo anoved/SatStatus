@@ -5,13 +5,12 @@ animate();
 
 function init() {
 	
-	// Camera
-	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+	// Camera (set near/far planes to reasonable values - far enough for largest orbit?)
+	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
 	resetCamera();
 	
 	// Controls
 	controls = new THREE.OrbitControls(camera);
-	// keep the globe centered in view (userPan not fully implemented)
 	controls.userPan = false;
 	// set controls.minDistance/maxDistance to reasonable limits (whole earth/largest orbit?)
 	controls.addEventListener('change', render);
@@ -21,7 +20,7 @@ function init() {
 	populateScene();
 	
 	// Renderer (.CanvasRenderer or .WebGLRenderer)
-	renderer = new THREE.CanvasRenderer();
+	renderer = new THREE.WebGLRenderer();
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	
 	// Stats (stats.setMode(1) for MS/frame instead of FPS)
@@ -110,12 +109,30 @@ function populateScene() {
 			[-19065.60449087,-118.64579651,-18141.69128266],
 			[-20298.89529655,-2947.06258911,-16453.07019106]];
 	
+	// pulled from three.js "earth" example
+	var earthTexture = new THREE.Texture();
+	var loader = new THREE.ImageLoader();
+	loader.addEventListener('load', function(event) {
+		earthTexture.image = event.content;
+		earthTexture.needsUpdate = true;
+		//earthTexture.offset.set(0.5,0);
+		render();
+	});
+	loader.load( 'images/earth_no_clouds_ecf.jpg' );
 	var geometry = new THREE.SphereGeometry(63, 16, 16);
-	var material = new THREE.MeshLambertMaterial({color: 0x8888FF});
+	var material = new THREE.MeshLambertMaterial({map: earthTexture, overdraw: true});
 	var mesh = new THREE.Mesh(geometry, material);
 	scene.add( mesh );
 	
-	var lc = new THREE.LineBasicMaterial({color: 0x999999});
+	// Issues with CanvasRenderer:
+	// - Texture mapped sphere appears to obscure lines (incorrectly drawn on top).
+	
+	// General issues:
+	// - Texture mapped sphere does not appear to be illuminated/in shade as
+	//   with plain color sphere. Probably a matter of settings & properties.
+	// - Texture map is off by 180 degrees. Fix rather than negate all X coords.
+	
+	var lc = new THREE.LineBasicMaterial({color: 0xFF0000});
 	for (var i = 0; i < points.length; i++) {
 		var pg = new THREE.Geometry();
 		pg.vertices.push(new THREE.Vector3(0, 0, 0));
@@ -127,7 +144,7 @@ function populateScene() {
 	// Note: globe and light orientation are not necessarily
 	// correctly matched to solar position and ECI orbit points.
 	var light = new THREE.PointLight(0xFFFFFF);
-	light.position.set(0, 0, 200);
+	light.position.set(2000, 0, 0);
 	scene.add(light);
 	light = new THREE.AmbientLight(0x202020);
 	scene.add(light);
@@ -139,7 +156,8 @@ function populateScene() {
  * Restore initial camera position. Changing the position triggers update.
  */
 function resetCamera() {
-	camera.position.set(0, 0, 350);
+	// camera oriented on ECF X axis
+	camera.position.set(250, 0, 0);
 }
 
 function animate() {
