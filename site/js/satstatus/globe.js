@@ -118,7 +118,7 @@ function populateScene() {
 		//earthTexture.offset.set(0.5,0);
 		render();
 	});
-	loader.load( 'images/earth_no_clouds_ecf.jpg' );
+	loader.load( 'images/earth_no_clouds.jpg' );
 	var geometry = new THREE.SphereGeometry(63, 16, 16);
 	var material = new THREE.MeshLambertMaterial({map: earthTexture, overdraw: true});
 	var mesh = new THREE.Mesh(geometry, material);
@@ -126,11 +126,7 @@ function populateScene() {
 	
 	// Issues with CanvasRenderer:
 	// - Texture mapped sphere appears to obscure lines (incorrectly drawn on top).
-	
-	// General issues:
-	// - Texture mapped sphere does not appear to be illuminated/in shade as
-	//   with plain color sphere. Probably a matter of settings & properties.
-	// - Texture map is off by 180 degrees. Fix rather than negate all X coords.
+	// - Texture mapped sphere with MeshLambertMaterial does not appear illuminated/shaded.
 	
 	var lc = new THREE.LineBasicMaterial({color: 0xFF0000});
 	for (var i = 0; i < points.length; i++) {
