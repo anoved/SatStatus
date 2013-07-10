@@ -257,11 +257,38 @@ function populateScene() {
 	
 	// geocentric sunlight (model & position according to current timestamp) 
 	var sunlight = new THREE.PointLight(0xFFFFFF);
-	sunlight.position.set(2000, 0, 0);
+	var sunTime = new Date;
+	console.log(sunTime);
+	var sun_eci = solarPosition(sunTime);
+	var sun_ecf = satellite.eci_to_ecf(sun_eci, jsdateToSidereal(sunTime));
+	sunlight.position.set(sun_ecf[0], sun_ecf[1], sun_ecf[2]);
 	scene.add(sunlight);
 	
 	// low ambient light ensures the "night side" is visible.
 	scene.add(new THREE.AmbientLight(0x202020));
+}
+
+function jsdateToSidereal(jsdate) {
+	var y = jsdate.getUTCFullYear();
+	var mo = jsdate.getUTCMonth();
+	var d = jsdate.getUTCDate();
+	var h = jsdate.getUTCHours();
+	var mi = jsdate.getUTCMinutes();
+	var s = jsdate.getUTCSeconds();
+	var sidereal = satellite.gstime_from_date(y, mo, d, h, mi, s);
+	return sidereal;
+}
+
+/*
+ * Parameters:
+ *    timestamp, javascript Date object. compute geocentric solar position.
+ * 
+ * Result:
+ *    ECI vector [x, y, z] of solar position at timestamp
+ */
+function solarPosition(timestamp) {
+	// static dummy position right now
+	return [2000, 0, 0];
 }
 
 /*
