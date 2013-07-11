@@ -229,8 +229,8 @@ function populateScene() {
 	for (var i = 1; i < points.length; i++) {
 		var pg = new THREE.Geometry();
 		//pg.vertices.push(new THREE.Vector3(0, 0, 0));
-		pg.vertices.push(new THREE.Vector3(points[i][0]/100.0, points[i][1]/100.0, points[i][2]/100.0));
-		pg.vertices.push(new THREE.Vector3(points[i-1][0]/100.0, points[i-1][1]/100.0, points[i-1][2]/100.0));
+		pg.vertices.push(new THREE.Vector3(points[i][0]/100.0, points[i][2]/100.0, points[i][1]/-100.0));
+		pg.vertices.push(new THREE.Vector3(points[i-1][0]/100.0, points[i-1][2]/100.0, points[i-1][1]/-100.0));
 		
 		var segment = new THREE.Line(pg, lc);
 		scene.add(segment);
@@ -258,37 +258,143 @@ function populateScene() {
 	// geocentric sunlight (model & position according to current timestamp) 
 	var sunlight = new THREE.PointLight(0xFFFFFF);
 	var sunTime = new Date;
-	console.log(sunTime);
-	var sun_eci = solarPosition(sunTime);
-	var sun_ecf = satellite.eci_to_ecf(sun_eci, jsdateToSidereal(sunTime));
-	sunlight.position.set(sun_ecf[0], sun_ecf[1], sun_ecf[2]);
+	var julianTime = dateToJulian(sunTime);
+	var sun_eci = solarPosition(julianTime);
+	var siderealTime = satellite.gstime_from_jday(julianTime);
+	var sun_ecf = satellite.eci_to_ecf(sun_eci, siderealTime);
+	sunlight.position.set(sun_ecf[0]/100.0, sun_ecf[2]/100.0, sun_ecf[1]/-100.0);
 	scene.add(sunlight);
+	
+	/*
+	 * 
+	 * ECF:
+	 * 
+	 * 0 x - three.js +x is ECF +x
+	 * 1 y - three.js +y is ECF +z
+	 * 2 z - three.js +z is ECF -y
+	 * 
+	 * consider creating an ecf_to_threejs method for satellite()
+	 * that negates the ECF y coordinate and swaps y and z
+	 * 
+	 */
+	
+	var sunColor = new THREE.LineBasicMaterial({color: 0xFFFF00, linewidth: 3});
+	var sunMarker = new THREE.Geometry();
+	sunMarker.vertices.push(new THREE.Vector3(0, 0, 0));
+	sunMarker.vertices.push(new THREE.Vector3(sun_ecf[0]/100.0, sun_ecf[2]/100.0, sun_ecf[1]/-100.0));
+	scene.add(new THREE.Line(sunMarker, sunColor));
 	
 	// low ambient light ensures the "night side" is visible.
 	scene.add(new THREE.AmbientLight(0x202020));
 }
 
-function jsdateToSidereal(jsdate) {
-	var y = jsdate.getUTCFullYear();
-	var mo = jsdate.getUTCMonth();
-	var d = jsdate.getUTCDate();
-	var h = jsdate.getUTCHours();
-	var mi = jsdate.getUTCMinutes();
-	var s = jsdate.getUTCSeconds();
-	var sidereal = satellite.gstime_from_date(y, mo, d, h, mi, s);
-	return sidereal;
+function dateToJulian(date) {
+	
+	// milliseconds since Unix epoch
+	var ms = date.getTime();
+	
+	// days since Unix epoch
+	var days = ms / 86400000.0;
+	
+	// add difference in days between Julian and Unix epoch 
+	return days + 2440587.5
 }
 
 /*
+ * Derived from the SolarPosition class in Dan Warner's C++ SGP4 library.
+ * 
  * Parameters:
  *    timestamp, javascript Date object. compute geocentric solar position.
  * 
  * Result:
  *    ECI vector [x, y, z] of solar position at timestamp
  */
-function solarPosition(timestamp) {
-	// static dummy position right now
-	return [2000, 0, 0];
+function solarPosition(julian) {
+	
+	// Jan 1.5 1900 = Jan 1 1900 12h UTC
+	//const double kEPOCH_JAN1_12H_1900 = 2415020.0;
+	
+	// timestamp.getTime() = milliseconds since unix epoch (UTC??)
+	
+	// libsgp datetime.toJulian:
+	//TimeSpan ts = TimeSpan(Ticks());
+	//return ts.TotalDays() + 1721425.5;
+	// totaldays = ticks / ticksperday (86400000000LL)
+	
+
+	
+	var mjd = julian - 2415020.0;
+	
+	//var mjd = timestamp.toJulian() - kEPOCH_JAN1_12H_1900;
+	
+	var year = 1900 + mjd / 365.25;
+	
+	// kSECONDS_PER_DAY = 86400.0
+	var T = (mjd + Delta_ET(year) / 86400.0) / 36525.0;
+	
+	var M = degreesToRadians(wrap360(358.47583
+			+ wrap360(35999.04975 * T)
+			- (0.000150 + 0.0000033 * T) * T * T));
+	
+	var L = degreesToRadians(wrap360(279.69668
+			+ wrap360(36000.76892 * T)
+			+ 0.0003025 * T * T));
+	
+	var e = 0.01675104 - (0.0000418 + 0.000000126 * T) * T;
+	
+	var C = degreesToRadians((1.919460
+			- (0.004789 + 0.000014 * T) * T) * Math.sin(M)
+			+ (0.020094 - 0.000100 * T) * Math.sin(2 * M)
+			+ 0.000293 * Math.sin(3 * M));
+	
+	var O = degreesToRadians(wrap360(259.18 - 1934.142 * T));
+	
+	var Lsa = wrap2PI( L + C
+			- degreesToRadians(0.00569 - 0.00479 * Math.sin(O)));
+	
+	var nu = wrap2PI (M + C);
+	
+	var R = 1.0000002 * (1 - e * e) / (1 + e * Math.cos(nu));
+	
+	var eps = degreesToRadians(23.452294 - (0.0130125
+			+ (0.00000164 - 0.000000503 * T) * T) * T + 0.00256 * Math.cos(O));
+	
+	// kAU = 1.49597870691e8
+	R = R * 1.49597870691e8;
+	
+	// 4th is radius; we can omit/ignore, since eci->ecf just uses [0..2]
+	var solar_eci = [
+			R * Math.cos(Lsa),
+			R * Math.sin(Lsa) * Math.cos(eps),
+			R * Math.sin(Lsa) * Math.sin(eps)
+	];
+	
+	//console.log(R);
+	
+	return solar_eci;
+}
+
+function Delta_ET(year) {
+	var value = 26.465 + 0.747622 * (year - 1950) + 1.886913 * 
+			Math.sin((Math.PI * 2.0) * (year - 1975) / 33);
+	return value;
+}
+
+function degreesToRadians(degrees) {
+  return degrees * Math.PI / 180;
+}
+
+function radiansToDegrees(radians) {
+	return radians * 180 / Math.PI;
+}
+
+function wrap360(degrees) {
+	//Mod(degrees, 360.0)
+	return degrees - 360.0 * Math.floor(degrees / 360.0);
+}
+
+function wrap2PI(degrees) {
+	return degrees - (Math.PI * 2) * Math.floor(degrees / (Math.PI * 2));
 }
 
 /*
