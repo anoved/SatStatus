@@ -216,7 +216,7 @@ function populateScene() {
 	var geometry = new THREE.SphereGeometry(63, 24, 24);
 	var material = new THREE.MeshLambertMaterial({map: earthTexture, overdraw: true});
 	var mesh = new THREE.Mesh(geometry, material);
-	scene.add( mesh );
+	scene.add( mesh ); 
 	
 	// Issues with CanvasRenderer:
 	// - Texture mapped sphere appears to obscure lines (incorrectly drawn on top).
@@ -225,7 +225,8 @@ function populateScene() {
 	
 	var lc = new THREE.LineBasicMaterial({color: 0xFF0000, linewidth: 2});
 	
-	//var wMaterial = new THREE.MeshLambertMaterial({color: 0xFF0000});
+	// opacity doesn't seem to be supported, at least w/Firefox on linux
+	var wMaterial = new THREE.MeshBasicMaterial({color: 0x00FF00, opacity: 0.5});
 	for (var i = 1; i < points.length; i++) {
 		var pg = new THREE.Geometry();
 		//pg.vertices.push(new THREE.Vector3(0, 0, 0));
@@ -235,19 +236,21 @@ function populateScene() {
 		var segment = new THREE.Line(pg, lc);
 		scene.add(segment);
 		
-		/*
+		
 		var vertices = [], faces = [], wGeometry;
 		vertices.push(new THREE.Vector3(0, 0, 0));
-		vertices.push(new THREE.Vector3(points[i][0]/100.0, points[i][1]/100.0, points[i][2]/100.0));
-		vertices.push(new THREE.Vector3(points[i-1][0]/100.0, points[i-1][1]/100.0, points[i-1][2]/100.0));
+		vertices.push(new THREE.Vector3(points[i][0]/100.0, points[i][2]/100.0, points[i][1]/-100.0));
+		vertices.push(new THREE.Vector3(points[i-1][0]/100.0, points[i-1][2]/100.0, points[i-1][1]/-100.0));
 		faces.push(new THREE.Face3(0, 1, 2));
+		faces.push(new THREE.Face3(2, 1, 0));
 		wGeometry = new THREE.Geometry();
 		wGeometry.vertices = vertices;
 		wGeometry.faces = faces;
 		var wedge = new THREE.Mesh(wGeometry, wMaterial);
-		wedge.doubleSided = true;
+		// doesn't seem to make anything doublesided automatically, hence second faces.push above
+		//wedge.doubleSided = true; 
 		scene.add(wedge);
-		*/
+		
 	}
 	var mc = new THREE.LineBasicMaterial({color: 0xFFFF00, linewidth: 2});
 	var pg = new THREE.Geometry();
@@ -266,12 +269,12 @@ function populateScene() {
 	sunlight.position.set(sun_tjs[0]/100.0, sun_tjs[1]/100.0, sun_tjs[2]/100.0);
 	scene.add(sunlight);
 	
-	var sunColor = new THREE.LineBasicMaterial({color: 0xFFFF00, linewidth: 3});
+/*	var sunColor = new THREE.LineBasicMaterial({color: 0xFFFF00, linewidth: 3});
 	var sunMarker = new THREE.Geometry();
 	sunMarker.vertices.push(new THREE.Vector3(0, 0, 0));
 	sunMarker.vertices.push(new THREE.Vector3(sun_tjs[0]/100.0, sun_tjs[1]/100.0, sun_tjs[2]/100.0));
 	scene.add(new THREE.Line(sunMarker, sunColor));
-	
+*/	
 	// low ambient light ensures the "night side" is visible.
 	scene.add(new THREE.AmbientLight(0x202020));
 }
