@@ -277,6 +277,16 @@ function populateScene() {
 }
 
 /*
+ * rotate the camera around the earth (simulation its revolution) an angle
+ * appropriate to the given time span. For instance, 24 hours: 2pi. 12hours: pi.
+ * 6hours: pi/2.
+ */
+function rotateTimeSpan(seconds) {
+	var angle = (Math.PI/12) * (seconds / 60 / 60);
+	controls.rotateLeft(angle);
+}
+
+/*
  * resetCamera
  * 
  * Restore initial camera position. Changing the position triggers update.
