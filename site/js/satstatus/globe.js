@@ -212,8 +212,8 @@ function populateScene() {
 		//earthTexture.offset.set(0.5,0);
 		render();
 	});
-	loader.load( 'images/earth_no_clouds.jpg' );
-	var geometry = new THREE.SphereGeometry(63, 16, 16);
+	loader.load( 'images/textures/earthmap1k.jpg' );
+	var geometry = new THREE.SphereGeometry(63, 24, 24);
 	var material = new THREE.MeshLambertMaterial({map: earthTexture, overdraw: true});
 	var mesh = new THREE.Mesh(geometry, material);
 	scene.add( mesh );
