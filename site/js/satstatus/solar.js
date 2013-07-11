@@ -1,13 +1,12 @@
 /*
- * Date.getJulianDate() method
+ * dateToJulianDate
+ * 
+ * Parameters:
+ *    Javascript date object
  * 
  * Returns:
  *    Number of days between this date and Julian epoch.
  */
- // bit confused about how to make this method broadly available
-/*Date.prototype.getJulianDate = function() {
-	return (this.getTime() / 86400000.0) + 2440587.5;
-}*/
 function dateToJulianDate(date) {
 	return (date.getTime() / 86400000.0) + 2440587.5;
 }
