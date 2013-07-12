@@ -296,9 +296,7 @@ function timespantoAngle(timespan) {
 
 /* orbit the camera around the y axis relative to its current position */
 function incrementOrbitCameraAngle(angleIncrement) {
-	// wrap 2pi
-	var angle = getCameraOrbitAngle() + angleIncrement;
-	orbitCameraToAngle(angle);
+	return orbitCameraToAngle(getCameraOrbitAngle() + angleIncrement);
 }
 
 /*
@@ -310,12 +308,24 @@ function getCameraOrbitAngle() {
 }
 
 /*
- * angle in radians from 0 to 2pi
  * rotate camera around threejs y axis
  * angle 0 is aligned with x axis (equator x prime meridian)
  * preserve current camera radius.
  */
 function orbitCameraToAngle(angle) {
+	
+	// wrap angle to 0..2PI
+	var theta = angle - (Math.PI * 2) * Math.floor(angle / (Math.PI * 2));
+	
+	// preserve phi (angle above/below equatorial plane)
+	var phi = Math.atan2( Math.sqrt( camera.position.x * camera.position.x + camera.position.z * camera.position.z ), camera.position.y );
+	var radius = camera.position.length();
+	
+	camera.position.x = radius * Math.sin(phi) * Math.cos(theta);
+	camera.position.y = radius * Math.cos(phi);
+	camera.position.z = radius * Math.sin(phi) * Math.sin(theta);
+	
+	return theta;
 }
 
 /*
