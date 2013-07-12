@@ -306,7 +306,7 @@ function incrementOrbitCameraAngle(angleIncrement) {
  * and camera position. (only the angle around y axis matters; ignore other).
  */
 function getCameraOrbitAngle() {
-	return 0;
+	return Math.atan2(camera.position.z, camera.position.x);
 }
 
 /*
