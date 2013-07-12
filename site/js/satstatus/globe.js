@@ -226,7 +226,7 @@ function populateScene() {
 	var lc = new THREE.LineBasicMaterial({color: 0xFF0000, linewidth: 2});
 	
 	// opacity doesn't seem to be supported, at least w/Firefox on linux
-	var wMaterial = new THREE.MeshBasicMaterial({color: 0x00FF00, opacity: 0.5});
+	var wMaterial = new THREE.MeshBasicMaterial({color: 0xAA2222, opacity: 0.5, transparent: true});
 	for (var i = 1; i < points.length; i++) {
 		var pg = new THREE.Geometry();
 		//pg.vertices.push(new THREE.Vector3(0, 0, 0));
@@ -287,6 +287,35 @@ function populateScene() {
 function rotateTimeSpan(seconds) {
 	var angle = (Math.PI/12) * (seconds / 60 / 60);
 	controls.rotateLeft(angle);
+}
+
+/* returns angle in radians that the earth rotates in timespan. pick a unit. */
+/* (not sidereal; simply 2pi radians in 24hour */
+function timespantoAngle(timespan) {
+}
+
+/* orbit the camera around the y axis relative to its current position */
+function incrementOrbitCameraAngle(angleIncrement) {
+	// wrap 2pi
+	var angle = getCameraOrbitAngle() + angleIncrement;
+	orbitCameraToAngle(angle);
+}
+
+/*
+ * return angle in radians between origin, x axis (equator x prime meridian),
+ * and camera position. (only the angle around y axis matters; ignore other).
+ */
+function getCameraOrbitAngle() {
+	return 0;
+}
+
+/*
+ * angle in radians from 0 to 2pi
+ * rotate camera around threejs y axis
+ * angle 0 is aligned with x axis (equator x prime meridian)
+ * preserve current camera radius.
+ */
+function orbitCameraToAngle(angle) {
 }
 
 /*
