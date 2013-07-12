@@ -289,9 +289,24 @@ function rotateTimeSpan(seconds) {
 	controls.rotateLeft(angle);
 }
 
-/* returns angle in radians that the earth rotates in timespan. pick a unit. */
-/* (not sidereal; simply 2pi radians in 24hour */
-function timespantoAngle(timespan) {
+function msToAngle(ms) {
+	return secToAngle(ms / 1000);
+}
+
+function secToAngle(sec) {
+	return minToAngle(sec / 60);
+}
+
+function minToAngle(min) {
+	return hrsToAngle(min / 60);
+}
+
+function hrsToAngle(hrs) {
+	return daysToAngle(hrs / 24);
+}
+
+function daysToAngle(days) {
+	return (Math.PI * 2) * days;
 }
 
 /* orbit the camera around the y axis relative to its current position */
