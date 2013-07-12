@@ -59,7 +59,7 @@ function populateScene() {
 	// sample satellite track coordinates
 	// 12 hours of a GPS satellite in 15 minute intervals.
 	// Earth centered inertial coordinates in kilometers
-	var points = [
+	var pointsb = [
 [3022.599965406991,5166.473197064728,3213.0902895734393],
 [2643.9678624398775,5689.196560530719,2610.9809459765374],
 [2225.528854628948,6115.372386026137,1961.0265392877147],
@@ -152,7 +152,7 @@ function populateScene() {
 [4523.115800171804,-1288.1026932805546,4894.2584902318395],
 [4985.149689030729,-610.7012807192712,4567.923414770495]];
 
-/*	var points = [
+	var points = [
 			[-21072.79446816,-5355.87190019,-14759.58202168],
 			[-21621.26883013,-8047.27367953,-12554.97391866],
 			[-21785.07540960,-10595.49649616,-10126.96706561],
@@ -201,7 +201,7 @@ function populateScene() {
 			[-17495.16660588,2711.89209183,-19509.46893005],
 			[-19065.60449087,-118.64579651,-18141.69128266],
 			[-20298.89529655,-2947.06258911,-16453.07019106]];
-	*/
+	
 	
 	// pulled from three.js "earth" example
 	var earthTexture = new THREE.Texture();
@@ -223,11 +223,13 @@ function populateScene() {
 	// - Texture mapped sphere with MeshLambertMaterial does not appear illuminated/shaded.
 	
 	
-	var lc = new THREE.LineBasicMaterial({color: 0xFF0000, linewidth: 2});
 	
-	// opacity doesn't seem to be supported, at least w/Firefox on linux
-	var wMaterial = new THREE.MeshBasicMaterial({color: 0xAA2222, opacity: 0.5, transparent: true});
+	//var wMaterial = new THREE.MeshBasicMaterial({color: 0xAA2222, opacity: 0.8, transparent: true});
 	for (var i = 1; i < points.length; i++) {
+		var trans = 0.8 * (i / points.length) + 0.1;
+
+		var lc = new THREE.LineBasicMaterial({color: 0xFFFF00, linewidth: 4, transparent: true, opacity: trans});
+
 		var pg = new THREE.Geometry();
 		//pg.vertices.push(new THREE.Vector3(0, 0, 0));
 		pg.vertices.push(new THREE.Vector3(points[i][0]/100.0, points[i][2]/100.0, points[i][1]/-100.0));
@@ -235,7 +237,6 @@ function populateScene() {
 		
 		var segment = new THREE.Line(pg, lc);
 		scene.add(segment);
-		
 		
 		var vertices = [], faces = [], wGeometry;
 		vertices.push(new THREE.Vector3(0, 0, 0));
@@ -246,9 +247,8 @@ function populateScene() {
 		wGeometry = new THREE.Geometry();
 		wGeometry.vertices = vertices;
 		wGeometry.faces = faces;
+		var wMaterial = new THREE.MeshBasicMaterial({color:0xAA2222, transparent: true, opacity: trans});
 		var wedge = new THREE.Mesh(wGeometry, wMaterial);
-		// doesn't seem to make anything doublesided automatically, hence second faces.push above
-		//wedge.doubleSided = true; 
 		scene.add(wedge);
 		
 	}
