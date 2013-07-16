@@ -1,6 +1,6 @@
 [submodule "site/js/satellite-js"]
 	path = site/js/satellite-js
-	url = git://github.com/shashwatak/satellite-js.git
+	url = git://github.com/anoved/satellite-js.git
 [submodule "site/js/three.js"]
 	path = site/js/three.js
 	url = git://github.com/mrdoob/three.js.git
