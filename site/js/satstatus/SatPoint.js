@@ -38,11 +38,18 @@ function SatPoint(satrec, date) {
 		this.geo = satellite.eci_to_geodetic(this.eci, this.sidereal);
 		
 		// Geodetic coordinate vector (lat deg, lng deg, alt km)
-		this.lla = [satellite.degrees_lat(this.geo[1]),
-				satellite.degrees_long(this.geo[0]), this.geo[2]];
+		this.lla = [
+				satellite.degrees_lat(this.geo[1]),
+				satellite.degrees_long(this.geo[0]),
+				this.geo[2]
+		];
 		
 		// Display coordinates (100 km per 1 unit)
-		this.xyz = [this.ecf[0]/100.0, this.ecf[2]/100.0, -1 * this.ecf[1]/100.0];
+		this.xyz = [
+				this.ecf[0]/100.0,
+				this.ecf[2]/100.0,
+				-1 * this.ecf[1]/100.0
+		];
 	}
 	
 	this.update(satrec, date);
