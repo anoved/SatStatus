@@ -12,43 +12,44 @@ function SatPoint(satrec, date) {
 		// Dates
 		
 		// Unix timestamp (milliseconds since unix epoch)
-		this.unixtime = date.getTime();
+		this.unixTime = date.getTime();
 		
 		// Julian date (milliseconds since unix epoch divided by ms/day yields
 		// days since unix epoch; plus difference between Julian and unix epoch)
-		this.julian = (this.unixtime / 86400000.0) + 2440587.5;
+		this.julianDate = (this.unixTime / 86400000.0) + 2440587.5;
 		
 		// Sidereal time
-		this.sidereal = satellite.gstime_from_jday(this.julian);
+		this.siderealTime = satellite.gstime_from_jday(this.julianDate);
 		
 		// Minutes from sat epoch (days from sat epoch times minutes per day)
-		this.minutesFromEpoch = (this.julian - satrec.jdsatepoch) * 1440.0;
+		this.minutesFromEpoch = (this.julianDate - satrec.jdsatepoch) * 1440.0;
 		
 		// Coordinates
 		
-		this.eci_vel = satellite.sgp4(satrec, this.minutesFromEpoch);
+		// SGP4 result array [position, velocity] in ECI km and ECI km/s
+		this.pos_vel = satellite.sgp4(satrec, this.minutesFromEpoch);
 		
 		// Earth Centered Inertial coordinate vector (km)	
-		this.eci = this.eci_vel[0];
+		this.eci = this.pos_vel[0];
 		
 		// Earth Centered Fixed coordinate vector (km)
-		this.ecf = satellite.eci_to_ecf(this.eci, this.sidereal);
+		this.ecf = satellite.eci_to_ecf(this.eci, this.siderealTime);
 		
-		// Geodetic coordinate vector (lng rad, lat rad, alt km)
-		this.geo = satellite.eci_to_geodetic(this.eci, this.sidereal);
+		// Geodetic coordinate vector radians [lng rad, lat rad, alt km]
+		this.geo_rad = satellite.eci_to_geodetic(this.eci, this.siderealTime);
 		
-		// Geodetic coordinate vector (lat deg, lng deg, alt km)
-		this.lla = [
-				satellite.degrees_lat(this.geo[1]),
-				satellite.degrees_long(this.geo[0]),
-				this.geo[2]
+		// Geodetic coordinate vector degrees [lng deg, lat deg, alt km]
+		this.geo = [
+				satellite.degrees_long(this.geo_rad[0]),
+				satellite.degrees_lat(this.geo_rad[1]),
+				this.geo_rad[2]
 		];
 		
 		// Display coordinates (100 km per 1 unit)
 		this.xyz = [
 				this.ecf[0]/100.0,
 				this.ecf[2]/100.0,
-				-1 * this.ecf[1]/100.0
+				this.ecf[1]/100.0 * -1.0
 		];
 	}
 	
