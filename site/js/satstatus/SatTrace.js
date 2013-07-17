@@ -23,25 +23,12 @@ function SatTrace(id) {
 	this.setup = function(tleText) {
 		this.tleText = tleText;
 		this.tleLines = this.tleText.split("\n");
-		this.satrec = satellite.twoline2rv(this.tleLines[0], this.tleLines[1]);
+		this.satrec = satellite.twoline2satrec(this.tleLines[0], this.tleLines[1]);
 		
 		// do other SatTrace initialization now that we have this.satrec.
 		// for instance, create and populate an array of SatPoints.
 		// Should we select initial time now, or go with something specified
 		// at constructor time?
-	}
-	
-	this.handler = function(e) {
-		console.log(e.target.responseText);
-		this.tle = e.target.responseText;
-	}
-	
-	
-	this.hookuphandler = function(element, handler, context) {
-		var wrapper = function(e) {
-			handler.call(context, e);
-		};
-		element.addEventListener("load", wrapper, false);
 	}
 	
 	/*
@@ -57,7 +44,13 @@ function SatTrace(id) {
 	this.prep = function(id) {
 		
 		var request = new XMLHttpRequest();
-		this.hookuphandler(request, this.handler, this);
+		request.onload = (function(context) {
+			return function(e) {
+				// "this" is the XMLHttpRequest; e is ProgressEvent (e.target
+				// is the XMLHttpRequest), and context is the parent SatTrace.
+				context.setup(this.responseText);
+			};
+		})(this);
 		
 		// The request will GET the TLE file at id (a path).
 		request.open('GET', id);
@@ -71,4 +64,3 @@ function SatTrace(id) {
 	
 	this.prep(id);
 }
-
