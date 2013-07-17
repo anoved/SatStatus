@@ -89,6 +89,8 @@ function SatTrace(id, timestamp) {
 		for(var i = this.pointCount - 1; i >= 0; i--) {
 			this.updateOldestPoint(new Date(startMilliseconds - (i * 60000)));
 		}
+		
+		window.addEventListener("updateSatTrace", this.updateHandler.bind(this), false);
 	}
 	
 	/*
@@ -105,7 +107,6 @@ function SatTrace(id, timestamp) {
 	 *   the updated SatPoint
 	 */
 	this.updateOldestPoint = function(timestamp) {
-		
 		var point = this.updatePoint(this.oldestPoint, timestamp);
 		
 		// update oldestPoint property to point at what is now the oldest point.
@@ -137,7 +138,11 @@ function SatTrace(id, timestamp) {
 		if (typeof(this.points[index]) === 'undefined') {
 			this.points[index] = new SatPoint(this.satrec, timestamp);
 		} else {
-			this.points[index].update(this.satrec, timestamp);
+			try {
+				this.points[index].update(this.satrec, timestamp);
+			} catch (e) {
+				console.log(e);
+			}
 		}
 		return this.points[index];
 	}
@@ -148,6 +153,6 @@ function SatTrace(id, timestamp) {
 	 * and passes it on to the updateOldestPoint method.
 	 */
 	this.updateHandler = function(event) {
-		this.updateOldestPoint(event.time);
+		this.updateOldestPoint(event.detail.time);
 	}
 }
