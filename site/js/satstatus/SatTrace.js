@@ -44,6 +44,23 @@ function SatTrace(id) {
 		
 		return request;
 	}
+	
+	// an array of SatPoints representing the path of this SatTrace
+	this.points = [];
+	
+	// the index of the oldest point in the points array. On trace update,
+	// the oldest point is simply updated in place rather than shifting array.
+	this.oldestPoint = 0;
+	
+	// the number of points to maintain in the points array. at present,
+	// modifying this value will not necessarily have intended results -
+	// increasing it should effectively insert a span of empty elements after
+	// oldestPoint, so that they can be populated on next update without losing
+	// old points. Likewise, decreasing pointCount should delete oldest x
+	// elements, ending with current oldestPoint. So, use methods to help with
+	// these adjustments rather than modifying pointCount directly.
+	this.pointCount = 90;
+	
 	this.id = id;
 	this.load(id);
 	
@@ -63,10 +80,7 @@ function SatTrace(id) {
 		this.tleText = tleText;
 		this.tleLines = this.tleText.split("\n", 2);
 		this.satrec = satellite.twoline2satrec(this.tleLines[0], this.tleLines[1]);
-		
-		// assuming no points array yet
-		this.points = [];
-		
+				
 		// all points arrays should be maintained to a constant size,
 		// with points representing position every few minutes.
 		// ideally, the size of these arrays should be reconfigurable on the
@@ -74,15 +88,68 @@ function SatTrace(id) {
 		
 		var now = new Date;
 		var nowMs = now.getTime();
-		//60000 ms per minute
-		
 		for(var i = 90; i > 0; i--) {
-			var offset = i * 60000;
-			var timems = nowMs - offset;
-			var timedate = new Date(timems);
-			var point = new SatPoint(this.satrec, timedate);
-			this.points.push(point);
+			this.updateOldestPoint(new Date(nowMs - (i * 60000)));
+		}
+	}
+	
+	/*
+	 * SatTrace.updateOldestPoint
+	 * 
+	 * Parameters:
+	 *   timestamp for SatPoint update (Javascript date)
+	 * 
+	 * Results:
+	 *   invokes SatTrace.updatePoint() on oldest point
+	 *   oldestPoint property is updated.
+	 * 
+	 * Returns:
+	 *   the updated SatPoint
+	 */
+	this.updateOldestPoint = function(timestamp) {
+		
+		var point = this.updatePoint(this.oldestPoint, timestamp);
+		
+		// update oldestPoint property to point at what is now the oldest point.
+		if (this.oldestPoint + 1 < this.pointCount) {
+			this.oldestPoint++;
+		} else {
+			this.oldestPoint = 0;
 		}
 		
+		return point;
+	}
+	
+	/*
+	 * SatTrace.updatePoint
+	 * 
+	 * Parameters:
+	 *   index of point to update
+	 *   timestamp for SatPoint update (Javascript date)
+	 * 
+	 * Results:
+	 *   if this.points[index] exists, updates with .update() method
+	 *   if this.points[index] is undefined, assigns new SatPoint().
+	 * 
+	 * Returns:
+	 *   the updated SatPoint
+	 */
+	this.updatePoint = function(index, timestamp) {
+		// reuse existing SatPoint objects rather than repeated delete/create.
+		if (typeof(this.points[index]) === 'undefined') {
+			this.points[index] = new SatPoint(this.satrec, timestamp);
+		} else {
+			this.points[index].update(this.satrec, timestamp);
+		}
+		return this.points[index];
+	}
+	
+	/*
+	 * To be registered as an event listener for the trace update event.
+	 * Reads update timestamp from .time property of CustomEvent argument,
+	 * and passes it on to the updateOldestPoint method.
+	 */
+	this.updateHandler = function(event) {
+		this.updateOldestPoint(event.time);
 	}
 }
