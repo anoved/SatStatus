@@ -63,5 +63,26 @@ function SatTrace(id) {
 		this.tleText = tleText;
 		this.tleLines = this.tleText.split("\n", 2);
 		this.satrec = satellite.twoline2satrec(this.tleLines[0], this.tleLines[1]);
+		
+		// assuming no points array yet
+		this.points = [];
+		
+		// all points arrays should be maintained to a constant size,
+		// with points representing position every few minutes.
+		// ideally, the size of these arrays should be reconfigurable on the
+		// fly, to allow traces to be grown or shrunk in accordance with user preference.
+		
+		var now = new Date;
+		var nowMs = now.getTime();
+		//60000 ms per minute
+		
+		for(var i = 90; i > 0; i--) {
+			var offset = i * 60000;
+			var timems = nowMs - offset;
+			var timedate = new Date(timems);
+			var point = new SatPoint(this.satrec, timedate);
+			this.points.push(point);
+		}
+		
 	}
 }
