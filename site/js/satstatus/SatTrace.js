@@ -1,4 +1,4 @@
-function SatTrace(id) { 
+function SatTrace(id, timestamp) { 
 	 
 	/*
 	 * SatTrace.load
@@ -62,6 +62,10 @@ function SatTrace(id) {
 	this.pointCount = 90;
 	
 	this.id = id;
+	
+	// default to right now if no initialization timestamp provided
+	this.startTimestamp = timestamp || new Date;
+	
 	this.load(id);
 	
 	/*
@@ -80,16 +84,10 @@ function SatTrace(id) {
 		this.tleText = tleText;
 		this.tleLines = this.tleText.split("\n", 2);
 		this.satrec = satellite.twoline2satrec(this.tleLines[0], this.tleLines[1]);
-				
-		// all points arrays should be maintained to a constant size,
-		// with points representing position every few minutes.
-		// ideally, the size of these arrays should be reconfigurable on the
-		// fly, to allow traces to be grown or shrunk in accordance with user preference.
 		
-		var now = new Date;
-		var nowMs = now.getTime();
-		for(var i = 90; i > 0; i--) {
-			this.updateOldestPoint(new Date(nowMs - (i * 60000)));
+		var startMilliseconds = this.startTimestamp.getTime();
+		for(var i = this.pointCount - 1; i >= 0; i--) {
+			this.updateOldestPoint(new Date(startMilliseconds - (i * 60000)));
 		}
 	}
 	
