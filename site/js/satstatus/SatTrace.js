@@ -1,49 +1,30 @@
-function SatTrace(id) {
-	
-	/*
-	 * Initilize with satellite ID or path. Issues an XMLHttpRequest to get the
-	 * current associated TLE. Handler method generates satrec and proceeds with
-	 * remainder of setup (SatPoint array population, etc.).
-	 * 
-	 * Expect initial timestamp as constructor argument, or implicitly use now?
-	 */
-	
-	
-	/*
-	 * SatTrace.setup
-	 * 
-	 * Invoked as onload handler for TLE request dispatched by SatTrace.prep.
-	 */
+function SatTrace(id) { 
 	 
-	 
-	 /*
-	  * Parameters:
-	  *   tleText, content of TLE file for this SatTrace.
-	  */
-	this.setup = function(tleText) {
-		this.tleText = tleText;
-		this.tleLines = this.tleText.split("\n");
-		this.satrec = satellite.twoline2satrec(this.tleLines[0], this.tleLines[1]);
-		
-		// do other SatTrace initialization now that we have this.satrec.
-		// for instance, create and populate an array of SatPoints.
-		// Should we select initial time now, or go with something specified
-		// at constructor time?
-	}
-	
 	/*
-	 * SatTrace.prep
+	 * SatTrace.load
+	 * 
+	 * Loads a TLE file, and registers this object's .setup() method to be
+	 * invoked when the file contents are available. Used by constructor; may
+	 * also be invoked on an existing SatTrace object to reload TLE data.
 	 * 
 	 * Parameters:
-	 *   id, satellite id (used to determine path to associated TLE file)
+	 *   id, used to determine path to associated TLE file
+	 *       (defaults to this SatTrace object's .id property)
+	 * 
+	 * Returns:
+	 *   XMLHttpRequest object
 	 * 
 	 * Results:
 	 *   Dispatches an XMLHttpRequest to load the TLE file.
-	 *   Invokes .setup onload.
+	 *   Invokes .setup() onload.
 	 */
-	this.prep = function(id) {
+	this.load = function(id) {
+		
+		var satId = id || this.id;
 		
 		var request = new XMLHttpRequest();
+		
+		// Pass the loaded TLE file data to this object's setup method.
 		request.onload = (function(context) {
 			return function(e) {
 				// "this" is the XMLHttpRequest; e is ProgressEvent (e.target
@@ -52,15 +33,35 @@ function SatTrace(id) {
 			};
 		})(this);
 		
-		// The request will GET the TLE file at id (a path).
-		request.open('GET', id);
+		// The request will GET the TLE file associated with satId.
+		request.open('GET', satId);
 		
 		// The TLE file is expected to be plain text.
 		request.overrideMimeType('text/plain');
 		
 		// Dispatch the request.
 		request.send();
+		
+		return request;
 	}
+	this.id = id;
+	this.load(id);
 	
-	this.prep(id);
+	/*
+	 * SatTrace.setup
+	 * 
+	 * Parameters:
+	 *   tleText, content of TLE file for this SatTrace.
+	 * 
+	 * Results:
+	 *   caches TLE data in SatTrace member properties. Generates SGP4 satrec
+	 *   object based on TLE data. Will [re]populate SatPoint array. (Note that
+	 *   array population should behave correctly if the array already exists -
+	 *   so that this method may safely be called to update existing SatTraces.)
+	 */
+	this.setup = function(tleText) {
+		this.tleText = tleText;
+		this.tleLines = this.tleText.split("\n", 2);
+		this.satrec = satellite.twoline2satrec(this.tleLines[0], this.tleLines[1]);
+	}
 }
