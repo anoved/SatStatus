@@ -122,8 +122,7 @@ function SatelliteTrace(tle) {
 	
 	// updateHandler is specifically an event handler, whereas update could be called directly.
 	this.updateHandler = function(event) {
-		// issue is that in an event handler, "this" refers to event, rather than method's parent object...
-		this.update(event.time);
+		this.update(event.detail.time);
 	}
 	
 	// appending .bind(this) to the event handler function overrides any event-based "this" definition
@@ -138,7 +137,7 @@ function SatelliteTrace(tle) {
 // member, whose resolution appears to vary among browsers tested.
 function periodicUpdateFunc() {
 	var nowTime = new Date;
-	var timestampedEvent = new CustomEvent("updateOrbit", {"time": nowTime});
+	var timestampedEvent = new CustomEvent("updateOrbit", {"detail": {"time": nowTime}});
 	window.dispatchEvent(timestampedEvent);
 }
 
