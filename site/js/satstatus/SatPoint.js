@@ -98,6 +98,8 @@ function SatPoint(satrec, date) {
 			this.pathLine.geometry.vertices[0].set(previous.xyz[0], previous.xyz[1], previous.xyz[2]);
 			this.pathLine.geometry.vertices[1].set(this.xyz[0], this.xyz[1], this.xyz[2]);
 			
+			this.pathLine.geometry.verticesNeedUpdate = true;
+			
 			// expect to trigger render() redraw later after all updates, if not automatic
 			
 			// restore line to scene if it appears to have been removed
@@ -119,8 +121,8 @@ function SatPoint(satrec, date) {
 		// age factor related to maximum age of display (eg, 90 minutes in ms)
 		var factor = 1 - (age / 5400000);
 		if (this.pathLine !== undefined) {
-			this.pathLine.material.color.setRGB(1 * factor, 0, 0);
-			this.pathLine.material.opacity = 1 * factor;
+			this.pathLine.material.color.setRGB(0.8 * factor + 0.2, 0, 0);
+			this.pathLine.material.opacity = 0.8 * factor + 0.2;
 		}
 	}
 	

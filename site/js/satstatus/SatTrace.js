@@ -172,14 +172,9 @@ function SatTrace(scene, id, timestamp) {
 		this.points[this.oldestPoint].update3dGeometry(this.scene, undefined);
 		
 		// update geometry of newest point
-		var newestIndex = this.oldestPoint == 0 ? this.points.length - 1 : this.oldestPoint - 1;
-		var previousIndex = newestIndex == 0 ? this.points.length - 1 : newestIndex - 1;
+		var newestIndex = (this.oldestPoint == 0 ? this.points.length - 1 : this.oldestPoint - 1);
+		var previousIndex = (newestIndex == 0 ? this.points.length - 1 : newestIndex - 1);
 		this.points[newestIndex].update3dGeometry(this.scene, this.points[previousIndex]);
-		
-		// some bugs with looping... trace appears to jump forwards.
-		// sanity check that updates have newer times
-		// sanity check age sequence.
-		// close, though!
 		
 		// update all the point styles
 		for (var i = 0; i < this.points.length; i++) {
