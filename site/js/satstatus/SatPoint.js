@@ -54,4 +54,75 @@ function SatPoint(satrec, date) {
 	}
 	
 	this.update(satrec, date);
+	
+	/*
+	 * SatPoint.update3dGeometry
+	 * 
+	 * Parameters:
+	 *   scene is the THREE.js scene to which the geometry should be shown
+	 *   previous is a reference to the previous SatPoint, used to draw path.
+	 *    (if undefined, this point has no predecessor and should be shown)
+	 */
+	this.update3dGeometry = function(scene, previous) {
+		
+		if (previous === undefined) {
+			if (this.pathLine !== undefined) {
+				
+				// do not display this point (remove from scene without
+				// discarding object) if there is no previous point.
+				scene.remove(this.pathLine);
+			}
+			
+			return;
+		}
+		
+		if (this.pathLine === undefined) {
+			
+			// create new line
+			
+			var geometry = new THREE.Geometry();
+			geometry.vertices.push(new THREE.Vector3(previous.xyz[0], previous.xyz[1], previous.xyz[2]));
+			geometry.vertices.push(new THREE.Vector3(this.xyz[0], this.xyz[1], this.xyz[2]));
+			
+			// expect to adjust material color & opacity, etc, based on point age
+			var material = new THREE.LineBasicMaterial({linewidth: 4, transparent: true});
+			
+			this.pathLine = new THREE.Line(geometry, material);
+			scene.add(this.pathLine);
+			
+		} else {
+			
+			// update exisiting line
+			
+			// might it be useful to use THREE.Vector3 for SatPoint vectors instead of generic arrays?
+			this.pathLine.geometry.vertices[0].set(previous.xyz[0], previous.xyz[1], previous.xyz[2]);
+			this.pathLine.geometry.vertices[1].set(this.xyz[0], this.xyz[1], this.xyz[2]);
+			
+			// expect to trigger render() redraw later after all updates, if not automatic
+			
+			// restore line to scene if it appears to have been removed
+			if (this.pathLine.parent === undefined) {
+				scene.add(this.pathLine);
+			}
+		}
+	}
+	
+	/*
+	 * expectation is that update3dmaterial will be called on points, with
+	 * current timestamp, once update3dGeometry is called.
+	 * 
+	 * Parameters:
+	 *   currentTimestamp, Javascript date of "current" time
+	 */
+	this.update3dMaterial = function(currentTimestamp) {
+		var age = currentTimestamp.getTime() - this.unixTime;
+		// age factor related to maximum age of display (eg, 90 minutes in ms)
+		var factor = 1 - (age / 5400000);
+		if (this.pathLine !== undefined) {
+			this.pathLine.material.color.setRgb(1 * factor, 0, 0);
+			this.pathLine.material.opacity = 1 * factor;
+		}
+	}
+	
+
 }

@@ -90,6 +90,8 @@ function SatTrace(id, timestamp) {
 			this.updateOldestPoint(new Date(startMilliseconds - (i * 60000)));
 		}
 		
+		this.update3dTrace(this.startTimestamp);
+		
 		window.addEventListener("updateSatTrace", this.updateHandler.bind(this), false);
 	}
 	
@@ -148,11 +150,43 @@ function SatTrace(id, timestamp) {
 	}
 	
 	/*
+	 * SatTrace.update3dTrace
+	 * 
+	 * Update the 3d trace display based on current contents of SatPoint array.
+	 * 
+	 * Parameters:
+	 *   timestamp Javascript date of curent time (used to update trace styles)
+	 * 
+	 */
+	this.update3dTrace = function(timestamp) {
+		
+		// consider replacing this.startTimestamp with something like
+		// this.referenceTimestamp, representing the latest update time of the
+		// trace, and available to methods needing current time (instead of passing parameter)
+		
+		// where do we get scene from?
+		
+		// hide the oldest point
+		this.points[this.oldestPoint].update3dGeometry(scene, undefined);
+		
+		// update geometry of newest point
+		var newestIndex = this.oldestPoint == 0 ? this.points.length - 1 : this.oldestPoint - 1;
+		var previousIndex = newestIndex == 0 ? this.points.length - 1 : newestIndex - 1;
+		this.points[newestIndex].update3dGeometry(scene, this.points[previousIndex]);
+		
+		// update all the point styles
+		for (var i = 0; i < points.length; i++) {
+			this.points[i].update3dMaterial(timestamp)
+		}
+	}
+	
+	/*
 	 * To be registered as an event listener for the trace update event.
 	 * Reads update timestamp from .time property of CustomEvent argument,
 	 * and passes it on to the updateOldestPoint method.
 	 */
 	this.updateHandler = function(event) {
 		this.updateOldestPoint(event.detail.time);
+		this.update3dTrace(event.detail.time);
 	}
 }
