@@ -119,7 +119,7 @@ function SatPoint(satrec, date) {
 		// age factor related to maximum age of display (eg, 90 minutes in ms)
 		var factor = 1 - (age / 5400000);
 		if (this.pathLine !== undefined) {
-			this.pathLine.material.color.setRgb(1 * factor, 0, 0);
+			this.pathLine.material.color.setRGB(1 * factor, 0, 0);
 			this.pathLine.material.opacity = 1 * factor;
 		}
 	}

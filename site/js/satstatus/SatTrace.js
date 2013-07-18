@@ -1,4 +1,4 @@
-function SatTrace(id, timestamp) { 
+function SatTrace(scene, id, timestamp) { 
 	 
 	/*
 	 * SatTrace.load
@@ -61,6 +61,8 @@ function SatTrace(id, timestamp) {
 	// these adjustments rather than modifying pointCount directly.
 	this.pointCount = 90;
 	
+	
+	this.scene = scene;
 	this.id = id;
 	
 	// default to right now if no initialization timestamp provided
@@ -90,7 +92,7 @@ function SatTrace(id, timestamp) {
 			this.updateOldestPoint(new Date(startMilliseconds - (i * 60000)));
 		}
 		
-		this.update3dTrace(this.startTimestamp);
+		this.setup3dTrace(this.startTimestamp);
 		
 		window.addEventListener("updateSatTrace", this.updateHandler.bind(this), false);
 	}
@@ -145,7 +147,7 @@ function SatTrace(id, timestamp) {
 			} catch (e) {
 				console.log(e);
 			}
-		}
+		}	
 		return this.points[index];
 	}
 	
@@ -167,16 +169,30 @@ function SatTrace(id, timestamp) {
 		// where do we get scene from?
 		
 		// hide the oldest point
-		this.points[this.oldestPoint].update3dGeometry(scene, undefined);
+		this.points[this.oldestPoint].update3dGeometry(this.scene, undefined);
 		
 		// update geometry of newest point
 		var newestIndex = this.oldestPoint == 0 ? this.points.length - 1 : this.oldestPoint - 1;
 		var previousIndex = newestIndex == 0 ? this.points.length - 1 : newestIndex - 1;
-		this.points[newestIndex].update3dGeometry(scene, this.points[previousIndex]);
+		this.points[newestIndex].update3dGeometry(this.scene, this.points[previousIndex]);
+		
+		// some bugs with looping... trace appears to jump forwards.
+		// sanity check that updates have newer times
+		// sanity check age sequence.
+		// close, though!
 		
 		// update all the point styles
-		for (var i = 0; i < points.length; i++) {
+		for (var i = 0; i < this.points.length; i++) {
 			this.points[i].update3dMaterial(timestamp)
+		}
+	}
+	
+	this.setup3dTrace = function(timestamp) {
+	
+		// assumes initial case of oldestPoint == 0
+		for(var i = 1; i < this.points.length; i++) {
+			this.points[i].update3dGeometry(this.scene, this.points[i-1]);
+			this.points[i].update3dMaterial(timestamp);
 		}
 	}
 	
