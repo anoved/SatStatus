@@ -1,4 +1,4 @@
-function SatTrace(scene, id, timestamp) { 
+function SatTrace(scene, id, initialDate) { 
 	 
 	/*
 	 * SatTrace.load
@@ -61,13 +61,9 @@ function SatTrace(scene, id, timestamp) {
 	// these adjustments rather than modifying pointCount directly.
 	this.pointCount = 90;
 	
-	
 	this.scene = scene;
 	this.id = id;
-	
-	// default to right now if no initialization timestamp provided
-	this.startTimestamp = timestamp || new Date;
-	
+	this.referenceDate = initialDate || new Date;
 	this.load(id);
 	
 	/*
@@ -87,12 +83,17 @@ function SatTrace(scene, id, timestamp) {
 		this.tleLines = this.tleText.split("\n", 2);
 		this.satrec = satellite.twoline2satrec(this.tleLines[0], this.tleLines[1]);
 		
-		var startMilliseconds = this.startTimestamp.getTime();
+		// populate initial point array with minutes preceding initial reference date
+		var startMilliseconds = this.referenceDate.getTime();
 		for(var i = this.pointCount - 1; i >= 0; i--) {
 			this.updateOldestPoint(new Date(startMilliseconds - (i * 60000)));
 		}
 		
-		this.setup3dTrace(this.startTimestamp);
+		// initialize 3d trace
+		for(var i = 1; i < this.points.length; i++) {
+			this.points[i].update3dGeometry(this.scene, this.points[i-1]);
+			this.points[i].update3dMaterial(this.referenceDate);
+		}
 		
 		window.addEventListener("updateSatTrace", this.updateHandler.bind(this), false);
 	}
@@ -100,8 +101,11 @@ function SatTrace(scene, id, timestamp) {
 	/*
 	 * SatTrace.updateOldestPoint
 	 * 
+	 * Updates the oldestPoint, using updatePoint, to current referenceDate.
+	 * 
 	 * Parameters:
-	 *   timestamp for SatPoint update (Javascript date)
+	 *   updateDate, optional explicit date for position update
+	 *     (default is this.referenceDate)
 	 * 
 	 * Results:
 	 *   invokes SatTrace.updatePoint() on oldest point
@@ -110,8 +114,11 @@ function SatTrace(scene, id, timestamp) {
 	 * Returns:
 	 *   the updated SatPoint
 	 */
-	this.updateOldestPoint = function(timestamp) {
-		var point = this.updatePoint(this.oldestPoint, timestamp);
+	this.updateOldestPoint = function(updateDate) {
+		
+		var date = updateDate || this.referenceDate;
+		
+		var point = this.updatePoint(this.oldestPoint, date);
 		
 		// update oldestPoint property to point at what is now the oldest point.
 		if (this.oldestPoint + 1 < this.pointCount) {
@@ -126,9 +133,12 @@ function SatTrace(scene, id, timestamp) {
 	/*
 	 * SatTrace.updatePoint
 	 * 
+	 * Updates specified point to position at current referenceDate.
+	 * 
 	 * Parameters:
 	 *   index of point to update
-	 *   timestamp for SatPoint update (Javascript date)
+	 *   updateDate, optional explicit date for position update.
+	 *     (default is this.referenceDate)
 	 * 
 	 * Results:
 	 *   if this.points[index] exists, updates with .update() method
@@ -137,13 +147,16 @@ function SatTrace(scene, id, timestamp) {
 	 * Returns:
 	 *   the updated SatPoint
 	 */
-	this.updatePoint = function(index, timestamp) {
+	this.updatePoint = function(index, updateDate) {
+		
+		var date = updateDate || this.referenceDate;
+		
 		// reuse existing SatPoint objects rather than repeated delete/create.
 		if (typeof(this.points[index]) === 'undefined') {
-			this.points[index] = new SatPoint(this.satrec, timestamp);
+			this.points[index] = new SatPoint(this.satrec, date);
 		} else {
 			try {
-				this.points[index].update(this.satrec, timestamp);
+				this.points[index].update(this.satrec, date);
 			} catch (e) {
 				console.log(e);
 			}
@@ -154,20 +167,12 @@ function SatTrace(scene, id, timestamp) {
 	/*
 	 * SatTrace.update3dTrace
 	 * 
-	 * Update the 3d trace display based on current contents of SatPoint array.
-	 * 
-	 * Parameters:
-	 *   timestamp Javascript date of curent time (used to update trace styles)
+	 * Update the 3d trace display based on current contents of SatPoint array
+	 * and the current referenceDate.
 	 * 
 	 */
-	this.update3dTrace = function(timestamp) {
-		
-		// consider replacing this.startTimestamp with something like
-		// this.referenceTimestamp, representing the latest update time of the
-		// trace, and available to methods needing current time (instead of passing parameter)
-		
-		// where do we get scene from?
-		
+	this.update3dTrace = function() {
+
 		// hide the oldest point
 		this.points[this.oldestPoint].update3dGeometry(this.scene, undefined);
 		
@@ -178,16 +183,7 @@ function SatTrace(scene, id, timestamp) {
 		
 		// update all the point styles
 		for (var i = 0; i < this.points.length; i++) {
-			this.points[i].update3dMaterial(timestamp)
-		}
-	}
-	
-	this.setup3dTrace = function(timestamp) {
-	
-		// assumes initial case of oldestPoint == 0
-		for(var i = 1; i < this.points.length; i++) {
-			this.points[i].update3dGeometry(this.scene, this.points[i-1]);
-			this.points[i].update3dMaterial(timestamp);
+			this.points[i].update3dMaterial(this.referenceDate)
 		}
 	}
 	
@@ -197,7 +193,8 @@ function SatTrace(scene, id, timestamp) {
 	 * and passes it on to the updateOldestPoint method.
 	 */
 	this.updateHandler = function(event) {
-		this.updateOldestPoint(event.detail.time);
-		this.update3dTrace(event.detail.time);
+		this.referenceDate = event.detail.time;
+		this.updateOldestPoint();
+		this.update3dTrace();
 	}
 }

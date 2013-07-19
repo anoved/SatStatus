@@ -116,8 +116,8 @@ function SatPoint(satrec, date) {
 	 * Parameters:
 	 *   currentTimestamp, Javascript date of "current" time
 	 */
-	this.update3dMaterial = function(currentTimestamp) {
-		var age = currentTimestamp.getTime() - this.unixTime;
+	this.update3dMaterial = function(referenceDate) {
+		var age = referenceDate.getTime() - this.unixTime;
 		// age factor related to maximum age of display (eg, 90 minutes in ms)
 		var factor = 1 - (age / 5400000);
 		if (this.pathLine !== undefined) {
