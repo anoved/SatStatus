@@ -62,12 +62,12 @@ function SatPoint(satrec, date) {
 	this.sp3d = new SatPoint3d(this);
 	this.update(satrec, date);
 	
-	this.updateDisplayGeometry = function(scene, previousPoint) {
-		this.sp3d.update3dGeometry(scene, previousPoint);
+	this.updateGeometry = function(scene, previousPoint) {
+		this.sp3d.updateGeometry(scene, previousPoint);
 	}
 	
-	this.updateDisplayStyle = function(referenceDate) {
-		this.sp3d.updateMaterial(referenceDate);
+	this.updateStyle = function(referenceDate) {
+		this.sp3d.updateStyle(referenceDate);
 	}
 }
 
@@ -83,7 +83,7 @@ function SatPoint3d(parent) {
 	this.parent = parent;
 	
 	/*
-	 * SatPoint3d.updateXYZ
+	 * SatPoint3d.updateLocation
 	 * 
 	 * Parameters:
 	 *   new x, y, and z coordinates in 3d display coordinate system
@@ -102,23 +102,23 @@ function SatPoint3d(parent) {
 	}
 	
 	/*
-	 * SatPoint.update3dGeometry
+	 * SatPoint.updateGeometry
 	 * 
 	 * Parameters:
 	 *   scene is the THREE.js scene to which the geometry should be shown
 	 *   previousPoint is a reference to a previous SatPoint, used to draw path.
 	 *    (if undefined, this point has no predecessor and should be shown)
 	 */
-	this.update3dGeometry = function(scene, previousPoint) {
+	this.updateGeometry = function(scene, previousPoint) {
 		if (previousPoint === undefined) {
-			this.conceal3d(scene);
+			this.concealGeometry(scene);
 		} else {
-			this.display3d(scene, previousPoint);
+			this.displayGeometry(scene, previousPoint);
 		}
 	}
 	
 	/*
-	 * SatPoint.conceal3d
+	 * SatPoint.concealGeometry
 	 * 
 	 * Parameter:
 	 *   scene is the THREE.js scene from which this point should be concealed
@@ -126,14 +126,14 @@ function SatPoint3d(parent) {
 	 * Result:
 	 *   if this point exists and is present in scene, it is removed from scene
 	 */
-	this.conceal3d = function(scene) {
+	this.concealGeometry = function(scene) {
 		if (this.pathLine !== undefined) {
 			scene.remove(this.pathLine);
 		}
 	}
 	
 	/*
-	 * SatPoint.display3d
+	 * SatPoint.displayGeometry
 	 * 
 	 * Parameters:
 	 *   scene is the THREE.js scene in which this point should be displayed
@@ -143,16 +143,16 @@ function SatPoint3d(parent) {
 	 *   3d representation of point is created or updated as needed.
 	 * 
 	 */
-	this.display3d = function(scene, previousPoint) {
+	this.displayGeometry = function(scene, previousPoint) {
 		if (this.pathLine === undefined) {
-			this.create3d(scene, previousPoint);
+			this.createGeometry(scene, previousPoint);
 		} else {
-			this.update3d(scene, previousPoint);
+			this.setGeometry(scene, previousPoint);
 		}
 	}
 	
 	/*
-	 * SatPoint.create3d
+	 * SatPoint.createGeometry
 	 *
 	 * Parameters:
 	 *   scene is the THREE.js scene in which this point should be displayed
@@ -161,7 +161,7 @@ function SatPoint3d(parent) {
 	 * Results:
 	 *   3d representation of this point is created and added to scene.
 	 */
-	this.create3d = function(scene, previousPoint) {
+	this.createGeometry = function(scene, previousPoint) {
 		var geometry = new THREE.Geometry();
 		geometry.vertices.push(previousPoint.sp3d.xyz);
 		geometry.vertices.push(this.xyz);
@@ -174,7 +174,7 @@ function SatPoint3d(parent) {
 	}
 	
 	/*
-	 * SatPoint.update3d
+	 * SatPoint.setGeometry
 	 * 
 	 * Parameters:
 	 *   scene is the THREE.js scene in which this point should be displayed
@@ -184,7 +184,7 @@ function SatPoint3d(parent) {
 	 *   3d representation of this point is updated and re-added to scene if
 	 *     necessary.
 	 */
-	this.update3d = function(scene, previousPoint) {
+	this.setGeometry = function(scene, previousPoint) {
 		this.pathLine.geometry.vertices[0].copy(previousPoint.sp3d.xyz);
 		this.pathLine.geometry.vertices[1].copy(this.xyz);
 		this.pathLine.geometry.verticesNeedUpdate = true;
@@ -196,7 +196,7 @@ function SatPoint3d(parent) {
 	}
 	
 	/*
-	 * SatPoint3d.updateMaterial
+	 * SatPoint3d.updateStyle
 	 * 
 	 * Parameters:
 	 *   referenceDate is current display time
@@ -204,7 +204,7 @@ function SatPoint3d(parent) {
 	 * Results:
 	 *   this SatPoint3d material is restyled to reflect age
 	 */
-	this.updateMaterial = function(referenceDate) {
+	this.updateStyle = function(referenceDate) {
 		var age = referenceDate.getTime() - this.parent.unixTime;
 		// age factor related to maximum age of display (eg, 90 minutes in ms)
 		var factor = 1 - (age / 5400000);
