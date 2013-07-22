@@ -62,6 +62,10 @@ function SatPoint(satrec, date) {
 	this.sp3d = new SatPoint3d(this);
 	this.update(satrec, date);
 	
+	this.updateDisplayGeometry = function(scene, previousPoint) {
+		this.sp3d.update3dGeometry(scene, previousPoint);
+	}
+	
 	this.updateDisplayStyle = function(referenceDate) {
 		this.sp3d.updateMaterial(referenceDate);
 	}

@@ -78,7 +78,7 @@ function SatTrace(scene, id, initialDate) {
 		
 		// initialize 3d trace
 		for(var i = 1; i < this.points.length; i++) {
-			this.points[i].sp3d.update3dGeometry(this.scene, this.points[i-1]);
+			this.points[i].updateDisplayGeometry(this.scene, this.points[i-1]);
 			this.points[i].updateDisplayStyle(this.referenceDate);
 		}
 		
@@ -179,12 +179,12 @@ function SatTrace(scene, id, initialDate) {
 	this.update3dTrace = function() {
 
 		// hide the oldest point
-		this.points[this.oldestPoint].sp3d.update3dGeometry(this.scene, undefined);
+		this.points[this.oldestPoint].updateDisplayGeometry(this.scene, undefined);
 		
 		// update geometry of newest point
 		var newestIndex = (this.oldestPoint == 0 ? this.points.length - 1 : this.oldestPoint - 1);
 		var previousIndex = (newestIndex == 0 ? this.points.length - 1 : newestIndex - 1);
-		this.points[newestIndex].sp3d.update3dGeometry(this.scene, this.points[previousIndex]);
+		this.points[newestIndex].updateDisplayGeometry(this.scene, this.points[previousIndex]);
 		
 		// update all the point styles
 		for (var i = 0; i < this.points.length; i++) {
