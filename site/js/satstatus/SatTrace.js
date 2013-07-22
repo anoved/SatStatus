@@ -1,5 +1,5 @@
 function SatTrace(scene, id, initialDate) { 
-	 
+	
 	/*
 	 * SatTrace.load
 	 * 
@@ -52,27 +52,6 @@ function SatTrace(scene, id, initialDate) {
 	this.loadHandler = function(onloadEvent) {
 		this.setup(onloadEvent.target.responseText);
 	}
-	
-	// an array of SatPoints representing the path of this SatTrace
-	this.points = [];
-	
-	// the index of the oldest point in the points array. On trace update,
-	// the oldest point is simply updated in place rather than shifting array.
-	this.oldestPoint = 0;
-	
-	// the number of points to maintain in the points array. at present,
-	// modifying this value will not necessarily have intended results -
-	// increasing it should effectively insert a span of empty elements after
-	// oldestPoint, so that they can be populated on next update without losing
-	// old points. Likewise, decreasing pointCount should delete oldest x
-	// elements, ending with current oldestPoint. So, use methods to help with
-	// these adjustments rather than modifying pointCount directly.
-	this.pointCount = 90;
-	
-	this.scene = scene;
-	this.id = id;
-	this.referenceDate = initialDate || new Date;
-	this.load(id);
 	
 	/*
 	 * SatTrace.setup
@@ -205,4 +184,26 @@ function SatTrace(scene, id, initialDate) {
 		this.updateOldestPoint();
 		this.update3dTrace();
 	}
+	
+	
+	// an array of SatPoints representing the path of this SatTrace
+	this.points = [];
+	
+	// the index of the oldest point in the points array. On trace update,
+	// the oldest point is updated in place rather than shifting array.
+	this.oldestPoint = 0;
+	
+	// the number of points to maintain in the points array. at present,
+	// modifying this value will not necessarily have intended results -
+	// increasing it should effectively insert a span of empty elements after
+	// oldestPoint, so that they can be populated on next update without losing
+	// old points. Likewise, decreasing pointCount should delete oldest x
+	// elements, ending with current oldestPoint. So, use methods to help with
+	// these adjustments rather than modifying pointCount directly.
+	this.pointCount = 90;
+	
+	this.scene = scene;
+	this.id = id;
+	this.referenceDate = initialDate || new Date;
+	this.load(id);
 }
