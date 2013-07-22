@@ -42,15 +42,13 @@ function SatPoint(satrec, date) {
 		this.geo = [
 				satellite.degrees_long(this.geo_rad[0]),
 				satellite.degrees_lat(this.geo_rad[1]),
-				this.geo_rad[2]
-		];
+				this.geo_rad[2]];
 		
 		// Display coordinates (100 km per 1 unit)
-		this.xyz = [
+		this.xyz = new THREE.Vector3(
 				this.ecf[0]/100.0,
 				this.ecf[2]/100.0,
-				this.ecf[1]/100.0 * -1.0
-		];
+				this.ecf[1]/100.0 * -1.0);
 	}
 	
 	this.update(satrec, date);
@@ -81,8 +79,8 @@ function SatPoint(satrec, date) {
 			// create new line
 			
 			var geometry = new THREE.Geometry();
-			geometry.vertices.push(new THREE.Vector3(previous.xyz[0], previous.xyz[1], previous.xyz[2]));
-			geometry.vertices.push(new THREE.Vector3(this.xyz[0], this.xyz[1], this.xyz[2]));
+			geometry.vertices.push(previous.xyz);
+			geometry.vertices.push(this.xyz);
 			
 			// expect to adjust material color & opacity, etc, based on point age
 			var material = new THREE.LineBasicMaterial({linewidth: 4, transparent: true});
@@ -95,9 +93,8 @@ function SatPoint(satrec, date) {
 			// update exisiting line
 			
 			// might it be useful to use THREE.Vector3 for SatPoint vectors instead of generic arrays?
-			this.pathLine.geometry.vertices[0].set(previous.xyz[0], previous.xyz[1], previous.xyz[2]);
-			this.pathLine.geometry.vertices[1].set(this.xyz[0], this.xyz[1], this.xyz[2]);
-			
+			this.pathLine.geometry.vertices[0].copy(previous.xyz);
+			this.pathLine.geometry.vertices[1].copy(this.xyz);
 			this.pathLine.geometry.verticesNeedUpdate = true;
 			
 			// expect to trigger render() redraw later after all updates, if not automatic
