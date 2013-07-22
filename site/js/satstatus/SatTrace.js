@@ -24,14 +24,8 @@ function SatTrace(scene, id, initialDate) {
 		
 		var request = new XMLHttpRequest();
 		
-		// Pass the loaded TLE file data to this object's setup method.
-		request.onload = (function(context) {
-			return function(e) {
-				// "this" is the XMLHttpRequest; e is ProgressEvent (e.target
-				// is the XMLHttpRequest), and context is the parent SatTrace.
-				context.setup(this.responseText);
-			};
-		})(this);
+		// loadHandler passes the TLE data returned by request to .setup().
+		request.onload = this.loadHandler.bind(this);
 		
 		// The request will GET the TLE file associated with satId.
 		request.open('GET', satId);
@@ -43,6 +37,20 @@ function SatTrace(scene, id, initialDate) {
 		request.send();
 		
 		return request;
+	}
+	
+	/*
+	 * SatTrace.loadHandler
+	 * 
+	 * Parameters:
+	 *   onloadEvent is a ProgressEvent whose .target member is the controlling
+	 *     XMLHttpRequest created by the .load() method.
+	 * 
+	 * Result:
+	 *   passes content returned by XMLHttpRequest to the .setup() method.
+	 */
+	this.loadHandler = function(onloadEvent) {
+		this.setup(onloadEvent.target.responseText);
 	}
 	
 	// an array of SatPoints representing the path of this SatTrace
