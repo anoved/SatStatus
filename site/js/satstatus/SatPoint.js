@@ -7,6 +7,19 @@
  */
 function SatPoint(satrec, date) {
 	
+	/*
+	 * SatPoint.update
+	 * 
+	 * Updates underlying display-independent timestamps and coordinates.
+	 * 
+	 * Parameters:
+	 *   satrec is the satellite object to use for calculations
+	 *   date is the timestamp for this update
+	 * 
+	 * Results:
+	 *   timestamp and coordinate members are updated.
+	 * 
+	 */
 	this.update = function(satrec, date) {
 		
 		// Dates
@@ -39,26 +52,50 @@ function SatPoint(satrec, date) {
 		this.geo_rad = satellite.eci_to_geodetic(this.eci, this.siderealTime);
 		
 		// Geodetic coordinate vector degrees [lng deg, lat deg, alt km]
-		this.geo = [
-				satellite.degrees_long(this.geo_rad[0]),
-				satellite.degrees_lat(this.geo_rad[1]),
-				this.geo_rad[2]];
+		this.geo = [satellite.degrees_long(this.geo_rad[0]), satellite.degrees_lat(this.geo_rad[1]), this.geo_rad[2]];
 		
-		// Display coordinates (100 km per 1 unit)
-		this.xyz = new THREE.Vector3(
-				this.ecf[0]/100.0,
-				this.ecf[2]/100.0,
-				this.ecf[1]/100.0 * -1.0);
+		// Update display-specific coordinates (100 km per 1 unit).
+		this.sp3d.updateLocation(this.ecf[0]/100.0, this.ecf[2]/100.0, this.ecf[1]/100.0 * -1.0);
+		
 	}
 	
-	this.update(satrec, date);
 	this.sp3d = new SatPoint3d(this);
+	this.update(satrec, date);
+	
+	this.updateDisplayStyle = function(referenceDate) {
+		this.sp3d.updateMaterial(referenceDate);
+	}
 }
 
 function SatPoint3d(parent) {
 	
+	// coordinates of this point in 3d display coordinate system
+	this.xyz = undefined;
+	
+	// line segment representing satellite path from previous to this point
 	this.pathLine = undefined;
+	
+	// the parent SatPoint object
 	this.parent = parent;
+	
+	/*
+	 * SatPoint3d.updateXYZ
+	 * 
+	 * Parameters:
+	 *   new x, y, and z coordinates in 3d display coordinate system
+	 * 
+	 * Results:
+	 *   If .xyz member is undefined, create as new Vector3 with x, y, z.
+	 *   Otherwise updates .xyz Vector3 with new coordinates.
+	 * 
+	 */
+	this.updateLocation = function(x, y, z) {
+		if (this.xyz === undefined) {
+			this.xyz = new THREE.Vector3(x, y, z);
+		} else {
+			this.xyz.set(x, y, z);
+		}
+	}
 	
 	/*
 	 * SatPoint.update3dGeometry
@@ -122,8 +159,8 @@ function SatPoint3d(parent) {
 	 */
 	this.create3d = function(scene, previousPoint) {
 		var geometry = new THREE.Geometry();
-		geometry.vertices.push(previousPoint.xyz);
-		geometry.vertices.push(this.parent.xyz);
+		geometry.vertices.push(previousPoint.sp3d.xyz);
+		geometry.vertices.push(this.xyz);
 		
 		// expect to adjust material color & opacity, etc, based on point age
 		var material = new THREE.LineBasicMaterial({linewidth: 4, transparent: true});
@@ -144,8 +181,8 @@ function SatPoint3d(parent) {
 	 *     necessary.
 	 */
 	this.update3d = function(scene, previousPoint) {
-		this.pathLine.geometry.vertices[0].copy(previousPoint.xyz);
-		this.pathLine.geometry.vertices[1].copy(this.parent.xyz);
+		this.pathLine.geometry.vertices[0].copy(previousPoint.sp3d.xyz);
+		this.pathLine.geometry.vertices[1].copy(this.xyz);
 		this.pathLine.geometry.verticesNeedUpdate = true;
 		
 		// restore line to scene if it appears to have been removed
@@ -155,13 +192,15 @@ function SatPoint3d(parent) {
 	}
 	
 	/*
-	 * expectation is that update3dmaterial will be called on points, with
-	 * current timestamp, once update3dGeometry is called.
+	 * SatPoint3d.updateMaterial
 	 * 
 	 * Parameters:
-	 *   currentTimestamp, Javascript date of "current" time
+	 *   referenceDate is current display time
+	 * 
+	 * Results:
+	 *   this SatPoint3d material is restyled to reflect age
 	 */
-	this.update3dMaterial = function(referenceDate) {
+	this.updateMaterial = function(referenceDate) {
 		var age = referenceDate.getTime() - this.parent.unixTime;
 		// age factor related to maximum age of display (eg, 90 minutes in ms)
 		var factor = 1 - (age / 5400000);

@@ -79,7 +79,7 @@ function SatTrace(scene, id, initialDate) {
 		// initialize 3d trace
 		for(var i = 1; i < this.points.length; i++) {
 			this.points[i].sp3d.update3dGeometry(this.scene, this.points[i-1]);
-			this.points[i].sp3d.update3dMaterial(this.referenceDate);
+			this.points[i].updateDisplayStyle(this.referenceDate);
 		}
 		
 		window.addEventListener("updateSatTrace", this.updateHandler.bind(this), false);
@@ -188,7 +188,7 @@ function SatTrace(scene, id, initialDate) {
 		
 		// update all the point styles
 		for (var i = 0; i < this.points.length; i++) {
-			this.points[i].sp3d.update3dMaterial(this.referenceDate);
+			this.points[i].updateDisplayStyle(this.referenceDate);
 		}
 	}
 	
