@@ -58,51 +58,92 @@ function SatPoint(satrec, date) {
 	 * 
 	 * Parameters:
 	 *   scene is the THREE.js scene to which the geometry should be shown
-	 *   previous is a reference to the previous SatPoint, used to draw path.
+	 *   previousPoint is a reference to a previous SatPoint, used to draw path.
 	 *    (if undefined, this point has no predecessor and should be shown)
 	 */
-	this.update3dGeometry = function(scene, previous) {
-		
-		if (previous === undefined) {
-			if (this.pathLine !== undefined) {
-				
-				// do not display this point (remove from scene without
-				// discarding object) if there is no previous point.
-				scene.remove(this.pathLine);
-			}
-			
-			return;
-		}
-		
-		if (this.pathLine === undefined) {
-			
-			// create new line
-			
-			var geometry = new THREE.Geometry();
-			geometry.vertices.push(previous.xyz);
-			geometry.vertices.push(this.xyz);
-			
-			// expect to adjust material color & opacity, etc, based on point age
-			var material = new THREE.LineBasicMaterial({linewidth: 4, transparent: true});
-			
-			this.pathLine = new THREE.Line(geometry, material);
-			scene.add(this.pathLine);
-			
+	this.update3dGeometry = function(scene, previousPoint) {
+		if (previousPoint === undefined) {
+			this.conceal3d(scene);
 		} else {
-			
-			// update exisiting line
-			
-			// might it be useful to use THREE.Vector3 for SatPoint vectors instead of generic arrays?
-			this.pathLine.geometry.vertices[0].copy(previous.xyz);
-			this.pathLine.geometry.vertices[1].copy(this.xyz);
-			this.pathLine.geometry.verticesNeedUpdate = true;
-			
-			// expect to trigger render() redraw later after all updates, if not automatic
-			
-			// restore line to scene if it appears to have been removed
-			if (this.pathLine.parent === undefined) {
-				scene.add(this.pathLine);
-			}
+			this.display3d(scene, previousPoint);
+		}
+	}
+	
+	/*
+	 * SatPoint.conceal3d
+	 * 
+	 * Parameter:
+	 *   scene is the THREE.js scene from which this point should be concealed
+	 * 
+	 * Result:
+	 *   if this point exists and is present in scene, it is removed from scene
+	 */
+	this.conceal3d = function(scene) {
+		if (this.pathLine !== undefined) {
+			scene.remove(this.pathLine);
+		}
+	}
+	
+	/*
+	 * SatPoint.display3d
+	 * 
+	 * Parameters:
+	 *   scene is the THREE.js scene in which this point should be displayed
+	 *   previousPoint is the SatPoint representing sat's previous location.
+	 * 
+	 * Results:
+	 *   3d representation of point is created or updated as needed.
+	 * 
+	 */
+	this.display3d = function(scene, previousPoint) {
+		if (this.pathLine === undefined) {
+			this.create3d(scene, previousPoint);
+		} else {
+			this.update3d(scene, previousPoint);
+		}
+	}
+	
+	/*
+	 * SatPoint.create3d
+	 *
+	 * Parameters:
+	 *   scene is the THREE.js scene in which this point should be displayed
+	 *   previousPoint is the SatPoint representing sat's previous location.
+	 *
+	 * Results:
+	 *   3d representation of this point is created and added to scene.
+	 */
+	this.create3d = function(scene, previousPoint) {
+		var geometry = new THREE.Geometry();
+		geometry.vertices.push(previousPoint.xyz);
+		geometry.vertices.push(this.xyz);
+		
+		// expect to adjust material color & opacity, etc, based on point age
+		var material = new THREE.LineBasicMaterial({linewidth: 4, transparent: true});
+		
+		this.pathLine = new THREE.Line(geometry, material);
+		scene.add(this.pathLine);
+	}
+	
+	/*
+	 * SatPoint.update3d
+	 * 
+	 * Parameters:
+	 *   scene is the THREE.js scene in which this point should be displayed
+	 *   previousPoint is the SatPoint representing sat's previous location.
+	 * 
+	 * Results:
+	 *   3d representation of this point is updated and re-added to scene if
+	 *     necessary.
+	 */
+	this.update3d = function(scene, previousPoint) {
+		this.pathLine.geometry.vertices[0].copy(previousPoint.xyz);
+		this.pathLine.geometry.vertices[1].copy(this.xyz);
+		this.pathLine.geometry.verticesNeedUpdate = true;
+		
+		// restore line to scene if it appears to have been removed
+		if (this.pathLine.parent === undefined) {
+			scene.add(this.pathLine);
 		}
 	}
 	
