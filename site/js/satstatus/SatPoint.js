@@ -71,6 +71,12 @@ function SatPoint(satrec, date) {
 	}
 }
 
+/*
+ * SatPoint3d constructor
+ * 
+ * Parameter:
+ *   parent SatPoint object reference
+ */
 function SatPoint3d(parent) {
 	
 	// coordinates of this point in 3d display coordinate system
