@@ -191,7 +191,7 @@ function SatTrace(scene, id, initialDate) {
 		
 		// update all the point styles
 		for (var i = 0; i < this.points.length; i++) {
-			this.points[i].update3dMaterial(this.referenceDate)
+			this.points[i].update3dMaterial(this.referenceDate);
 		}
 	}
 	
