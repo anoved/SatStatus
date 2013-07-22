@@ -86,6 +86,24 @@ function SatTrace(scene, id, initialDate) {
 	}
 	
 	/*
+	 * SatTrace.updateHandler
+	 * 
+	 * Parameter:
+	 *   updateEvent is a CustomEvent with a Date object as the time detail.
+	 * 
+	 * Results:
+	 *   Caches event date as SatTrace reference date.
+	 *   Invokes .updateOldestPoint() to replace old point with new point.
+	 *   Invokes .update3dTrace() to update 3d display based on points.
+	 * 
+	 */
+	this.updateHandler = function(updateEvent) {
+		this.referenceDate = updateEvent.detail.time;
+		this.updateOldestPoint();
+		this.update3dTrace();
+	}
+	
+	/*
 	 * SatTrace.updateOldestPoint
 	 * 
 	 * Updates the oldestPoint, using updatePoint, to current referenceDate.
@@ -173,18 +191,6 @@ function SatTrace(scene, id, initialDate) {
 			this.points[i].update3dMaterial(this.referenceDate);
 		}
 	}
-	
-	/*
-	 * To be registered as an event listener for the trace update event.
-	 * Reads update timestamp from .time property of CustomEvent argument,
-	 * and passes it on to the updateOldestPoint method.
-	 */
-	this.updateHandler = function(event) {
-		this.referenceDate = event.detail.time;
-		this.updateOldestPoint();
-		this.update3dTrace();
-	}
-	
 	
 	// an array of SatPoints representing the path of this SatTrace
 	this.points = [];
