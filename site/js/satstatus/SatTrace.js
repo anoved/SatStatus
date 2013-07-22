@@ -83,6 +83,7 @@ function SatTrace(scene, id, initialDate) {
 		}
 		
 		window.addEventListener("updateSatTrace", this.updateHandler.bind(this), false);
+		window.dispatchEvent(new CustomEvent("traceLoaded"));
 	}
 	
 	/*

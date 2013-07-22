@@ -90,4 +90,9 @@ function SatScene(containerId) {
 	this.traces = [];
 	this.init(containerId);
 	this.animate();
+	
+	// ensure display is updated when a trace is loaded. (Traces load TLE data
+	// asynchronously, so nothing may be ready to render until the trace setup
+	// method fires the traceLoaded event.)
+	window.addEventListener("traceLoaded", this.render.bind(this), false);
 }
