@@ -76,7 +76,7 @@ function SatTrace(scene, id, initialDate) {
 			this.updateOldestPoint(new Date(startMilliseconds - (i * 60000)));
 		}
 		
-		// initialize 3d trace
+		// initialize trace display
 		for(var i = 1; i < this.points.length; i++) {
 			this.points[i].updateGeometry(this.scene, this.points[i-1]);
 			this.points[i].updateStyle(this.referenceDate);
@@ -94,13 +94,13 @@ function SatTrace(scene, id, initialDate) {
 	 * Results:
 	 *   Caches event date as SatTrace reference date.
 	 *   Invokes .updateOldestPoint() to replace old point with new point.
-	 *   Invokes .update3dTrace() to update 3d display based on points.
+	 *   Invokes .updateDisplay() to update trace display based on points.
 	 * 
 	 */
 	this.updateHandler = function(updateEvent) {
 		this.referenceDate = updateEvent.detail.time;
 		this.updateOldestPoint();
-		this.update3dTrace();
+		this.updateDisplay();
 	}
 	
 	/*
@@ -170,13 +170,13 @@ function SatTrace(scene, id, initialDate) {
 	}
 	
 	/*
-	 * SatTrace.update3dTrace
+	 * SatTrace.updateDisplay
 	 * 
-	 * Update the 3d trace display based on current contents of SatPoint array
-	 * and the current referenceDate.
+	 * Update the trace displays based on current contents of SatPoint array
+	 * and the current referenceDate. (Updates display geometry and styles.) 
 	 * 
 	 */
-	this.update3dTrace = function() {
+	this.updateDisplay = function() {
 
 		// hide the oldest point
 		this.points[this.oldestPoint].updateGeometry(this.scene, undefined);
