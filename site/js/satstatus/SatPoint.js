@@ -52,6 +52,13 @@ function SatPoint(satrec, date) {
 	}
 	
 	this.update(satrec, date);
+	this.sp3d = new SatPoint3d(this);
+}
+
+function SatPoint3d(parent) {
+	
+	this.pathLine = undefined;
+	this.parent = parent;
 	
 	/*
 	 * SatPoint.update3dGeometry
@@ -116,7 +123,7 @@ function SatPoint(satrec, date) {
 	this.create3d = function(scene, previousPoint) {
 		var geometry = new THREE.Geometry();
 		geometry.vertices.push(previousPoint.xyz);
-		geometry.vertices.push(this.xyz);
+		geometry.vertices.push(this.parent.xyz);
 		
 		// expect to adjust material color & opacity, etc, based on point age
 		var material = new THREE.LineBasicMaterial({linewidth: 4, transparent: true});
@@ -138,7 +145,7 @@ function SatPoint(satrec, date) {
 	 */
 	this.update3d = function(scene, previousPoint) {
 		this.pathLine.geometry.vertices[0].copy(previousPoint.xyz);
-		this.pathLine.geometry.vertices[1].copy(this.xyz);
+		this.pathLine.geometry.vertices[1].copy(this.parent.xyz);
 		this.pathLine.geometry.verticesNeedUpdate = true;
 		
 		// restore line to scene if it appears to have been removed
@@ -155,7 +162,7 @@ function SatPoint(satrec, date) {
 	 *   currentTimestamp, Javascript date of "current" time
 	 */
 	this.update3dMaterial = function(referenceDate) {
-		var age = referenceDate.getTime() - this.unixTime;
+		var age = referenceDate.getTime() - this.parent.unixTime;
 		// age factor related to maximum age of display (eg, 90 minutes in ms)
 		var factor = 1 - (age / 5400000);
 		if (this.pathLine !== undefined) {
@@ -163,6 +170,6 @@ function SatPoint(satrec, date) {
 			this.pathLine.material.opacity = 0.8 * factor + 0.2;
 		}
 	}
-	
 
+	
 }
