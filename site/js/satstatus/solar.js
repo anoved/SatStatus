@@ -37,10 +37,6 @@ function SatSun(initialDate) {
  * SolarPosition
  * 
  * Derived from SolarPosition::FindPosition() in Dan Warner's C++ SGP4 library.
- * Use the getJulianDate method above to convert Javascript Date objects to
- * Julian date. Use satellite.gstime_from_day() to convert Julian date to
- * sidereal time, needed in turn to convert SolarPosition ECI result vector to
- * ECF coordinates using satellite.eci_to_ecf().
  * 
  * Parameters:
  *    Julian date
