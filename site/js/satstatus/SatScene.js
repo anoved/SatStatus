@@ -52,11 +52,8 @@ function SatScene(containerId) {
 		this.scene.add(earthMesh);
 		
 		// Simulated geocentric sunlight
-		var sunlight = new THREE.PointLight(0xFFFFFF);
-		this.sun = new SatSun(new Date);
-		sunlight.position.set(this.sun.xyz[0], this.sun.xyz[1], this.sun.xyz[2]);
-		this.scene.add(sunlight);
-
+		this.sun = new SatSun(this.scene, new Date);
+		
 		// Ambient light for night-side visibility
 		this.scene.add(new THREE.AmbientLight(0x202020));
 

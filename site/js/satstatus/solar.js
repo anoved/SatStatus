@@ -2,7 +2,7 @@
  * SatSun
  * 
  */
-function SatSun(initialDate) {
+function SatSun(scene, initialDate) {
 	
 	this.update = function(referenceDate) {
 		
@@ -25,8 +25,32 @@ function SatSun(initialDate) {
 		this.ecf = satellite.eci_to_ecf(this.eci, this.siderealTime);
 		
 		this.xyz = [this.ecf[0]/100.0, this.ecf[2]/100.0, -1 * this.ecf[1]/100.0];
+		
+		// Display
+		
+		this.updateGeometry();
 	}
 	
+	// render required to reflect update
+	this.updateGeometry = function() {
+		if (this.sunlight === undefined) {
+			this.createSun();
+		} else {
+			this.setSun();
+		}
+	}
+	
+	this.createSun = function() {
+		this.sunlight = new THREE.PointLight(0xFFFFFF);
+		this.setSun();
+		this.scene.add(this.sunlight);
+	}
+	
+	this.setSun = function() {
+		this.sunlight.position.set(this.xyz[0], this.xyz[1], this.xyz[2]);
+	}
+	
+	this.scene = scene;
 	if (initialDate === undefined) {
 		initialDate = new Date;
 	}
