@@ -82,7 +82,7 @@ function SatTrace(scene, id, initialDate) {
 			this.points[i].updateStyle(this.referenceDate);
 		}
 		
-		window.addEventListener("updateSatTrace", this.updateHandler.bind(this), false);
+		window.addEventListener("updateDisplay", this.updateHandler.bind(this), false);
 		window.dispatchEvent(new CustomEvent("renderEvent"));
 	}
 	

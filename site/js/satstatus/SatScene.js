@@ -92,12 +92,12 @@ function SatScene(containerId) {
 	window.addEventListener("renderEvent", this.render.bind(this), false);
 }
 
-/* temporary test helper. Dispatches an updateSatTrace event with current time. */
+/* temporary test helper. Dispatches an updateDisplay event with current time. */
 /* window.setInterval(UpdateSatTrace, 5000) - run it every five seconds */
-function UpdateSatTrace() {
+function UpdateDisplay() {
 	var now = new Date;
-	var event = new CustomEvent("updateSatTrace", {"detail": {"time": now}});
+	var event = new CustomEvent("updateDisplay", {"detail": {"time": now}});
 	window.dispatchEvent(event);
-	// hacky - updateSatTrace handlers may not be done in time for render event.
+	// hacky - updateDisplay handlers may not be done in time for render event.
 	window.dispatchEvent(new CustomEvent("renderEvent"));
 }

@@ -1,9 +1,23 @@
 /*
  * SatSun
  * 
+ * Parameters:
+ *   scene associated with display representation of sun
+ *   initialDate is JavaScript date for initial sun position (defaults to now)
+ * 
  */
 function SatSun(scene, initialDate) {
 	
+	/*
+	 * SatSun.update
+	 * 
+	 * Parameter:
+	 *   referenceDate is a Javascript Date
+	 * 
+	 * Results:
+	 *   Underlying timestamps and coordinates of sun position are updated.
+	 *   Then, the display representation is updated as well.
+	 */
 	this.update = function(referenceDate) {
 		
 		// Dates
@@ -20,45 +34,78 @@ function SatSun(scene, initialDate) {
 		
 		// Coordinates
 		
-		this.eci = SolarPosition(this.julianDate);
+		this.eci = findSolarPosition(this.julianDate);
 		
 		this.ecf = satellite.eci_to_ecf(this.eci, this.siderealTime);
 		
 		this.xyz = [this.ecf[0]/100.0, this.ecf[2]/100.0, -1 * this.ecf[1]/100.0];
-		
+				
 		// Display
 		
-		this.updateGeometry();
+		this.updateDisplay();
 	}
 	
-	// render required to reflect update
-	this.updateGeometry = function() {
+	/*
+	 * SatSun.updateHandler
+	 * 
+	 * Parameter:
+	 *   updateEvent is an updateDisplay CustomEvent
+	 * 
+	 * Results:
+	 *   invokes object's update method with reference time from updateEvent
+	 */
+	this.updateHandler = function(updateEvent) {
+		this.update(updateEvent.detail.time);
+	}
+	
+	/*
+	 * SatSun.updateDisplay
+	 * 
+	 * Updates the display representation of this sun position. Creates display
+	 * representation if necessary; otherwise, sets existing light to new xyz.
+	 */
+	this.updateDisplay = function() {
 		if (this.sunlight === undefined) {
-			this.createSun();
+			this.createDisplay();
 		} else {
-			this.setSun();
+			this.setDisplay();
 		}
 	}
 	
-	this.createSun = function() {
+	/*
+	 * SatSun.createDisplay
+	 * 
+	 * Creates display representation (a point light) of this sun position and
+	 * adds it to the associated scene.
+	 */
+	this.createDisplay = function() {
 		this.sunlight = new THREE.PointLight(0xFFFFFF);
-		this.setSun();
+		this.setDisplay();
 		this.scene.add(this.sunlight);
 	}
 	
-	this.setSun = function() {
+	/*
+	 * SatSun.setDisplay
+	 * 
+	 * Sets the position of the display representation of the sun to xyz vector.
+	 */
+	this.setDisplay = function() {
 		this.sunlight.position.set(this.xyz[0], this.xyz[1], this.xyz[2]);
 	}
 	
+	/*
+	 * SatSun initilization
+	 */
 	this.scene = scene;
 	if (initialDate === undefined) {
 		initialDate = new Date;
 	}
 	this.update(initialDate);
+	window.addEventListener("updateDisplay", this.updateHandler.bind(this), false);
 }
 
 /*
- * SolarPosition
+ * findSolarPosition
  * 
  * Derived from SolarPosition::FindPosition() in Dan Warner's C++ SGP4 library.
  * 
@@ -68,7 +115,7 @@ function SatSun(scene, initialDate) {
  * Result:
  *    ECI vector [x, y, z] km of solar position at given Julian date
  */
-function SolarPosition(julianDate) {
+function findSolarPosition(julianDate) {
 	
 	function DegreesToRadians(degrees) {
 		return degrees * Math.PI / 180;
