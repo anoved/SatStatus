@@ -24,23 +24,7 @@ function SatSun(initialDate) {
 		
 		this.ecf = satellite.eci_to_ecf(this.eci, this.siderealTime);
 		
-		this.xyz = this.ecf_to_xyz(this.ecf);
-	}
-	
-	/*
-	 * SatSun.ecf_to_xyz
-	 * 
-	 * Utility method to convert ECF coordinates to display coordinates.
-	 * 
-	 * Parameters:
-	 *    ecf_vector, a vector of ECF [x, y, z] coordinates
-	 * 
-	 * Returns
-	 *    Coordinate vector appropriate for Three.js display (ECF [x, z, -y]/100).
-	 */
-	
-	this.ecf_to_xyz = function(ecf_vector) {
-		return [ecf_vector[0]/100.0, ecf_vector[2]/100.0, -1 * ecf_vector[1]/100.0];
+		this.xyz = [this.ecf[0]/100.0, this.ecf[2]/100.0, -1 * this.ecf[1]/100.0];
 	}
 	
 	if (initialDate === undefined) {
