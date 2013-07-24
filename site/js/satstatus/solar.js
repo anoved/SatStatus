@@ -1,27 +1,52 @@
 /*
- * dateToJulianDate
+ * SatSun
  * 
- * Parameters:
- *    Javascript date object
- * 
- * Returns:
- *    Number of days between this date and Julian epoch.
  */
-function dateToJulianDate(date) {
-	return (date.getTime() / 86400000.0) + 2440587.5;
-}
-
-/*
- * satellite.ecf_to_xyz
- * 
- * Parameters:
- *    ecf_coords, a vector of ECF [x, y, z] coordinates
- * 
- * Returns
- *    Coordinate vector appropriate for Three.js display (ECF [x, z, -y]/100).
- */
-satellite.ecf_to_xyz = function(ecf_coords) {
-	return [ecf_coords[0]/100.0, ecf_coords[2]/100.0, -1 * ecf_coords[1]/100.0];
+function SatSun(initialDate) {
+	
+	this.update = function(referenceDate) {
+		
+		// Dates
+		
+		// Unix timestamp (milliseconds since unix epoch)
+		this.unixTime = referenceDate.getTime();
+		
+		// Julian date (milliseconds since unix epoch divided by ms/day yields
+		// days since unix epoch; plus difference between Julian and unix epoch)
+		this.julianDate = (this.unixTime / 86400000.0) + 2440587.5;
+		
+		// Sidereal time
+		this.siderealTime = satellite.gstime_from_jday(this.julianDate);
+		
+		// Coordinates
+		
+		this.eci = SolarPosition(this.julianDate);
+		
+		this.ecf = satellite.eci_to_ecf(this.eci, this.siderealTime);
+		
+		this.xyz = this.ecf_to_xyz(this.ecf);
+	}
+	
+	/*
+	 * SatSun.ecf_to_xyz
+	 * 
+	 * Utility method to convert ECF coordinates to display coordinates.
+	 * 
+	 * Parameters:
+	 *    ecf_vector, a vector of ECF [x, y, z] coordinates
+	 * 
+	 * Returns
+	 *    Coordinate vector appropriate for Three.js display (ECF [x, z, -y]/100).
+	 */
+	
+	this.ecf_to_xyz = function(ecf_vector) {
+		return [ecf_vector[0]/100.0, ecf_vector[2]/100.0, -1 * ecf_vector[1]/100.0];
+	}
+	
+	if (initialDate === undefined) {
+		initialDate = new Date;
+	}
+	this.update(initialDate);
 }
 
 /*
