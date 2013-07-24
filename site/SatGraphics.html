@@ -24,11 +24,9 @@
 		
 		<script>
 			
-			// constructor takes id of div to house display
-			var scene = new SatScene("graphics-container");
-			
-			//	var sat = new SatTrace(scene, "tle/test.tle", now);
-			// scene.addTrace("tle/test.tle", now);
+			var scene = new SatScene("graphics-container");			
+			scene.addTrace("tle/iss.tle");
+			scene.addTrace("tle/vanguard.tle");
 			
 		</script>
 				
