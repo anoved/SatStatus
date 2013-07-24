@@ -12,16 +12,16 @@ function dateToJulianDate(date) {
 }
 
 /*
- * satellite.ecf_to_threejs
+ * satellite.ecf_to_xyz
  * 
  * Parameters:
  *    ecf_coords, a vector of ECF [x, y, z] coordinates
  * 
  * Returns
- *    Coordinate vector appropriate for Three.js display (ECF [x, z, -y]).
+ *    Coordinate vector appropriate for Three.js display (ECF [x, z, -y]/100).
  */
-satellite.ecf_to_threejs = function(ecf_coords) {
-	return [ecf_coords[0], ecf_coords[2], -1 * ecf_coords[1]];
+satellite.ecf_to_xyz = function(ecf_coords) {
+	return [ecf_coords[0]/100.0, ecf_coords[2]/100.0, -1 * ecf_coords[1]/100.0];
 }
 
 /*

@@ -51,11 +51,18 @@ function SatScene(containerId) {
 		var earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
 		this.scene.add(earthMesh);
 		
-		// Dummy light source
+		// Simulated geocentric sunlight
 		var sunlight = new THREE.PointLight(0xFFFFFF);
-		sunlight.position.set(1000.0, 0, 0);
+		var suntime = new Date;
+		var sunjd = dateToJulianDate(suntime);
+		var sunst = satellite.gstime_from_jday(sunjd);
+		var suneci = SolarPosition(sunjd);
+		var sunecf = satellite.eci_to_ecf(suneci, sunst);
+		var sunxyz = satellite.ecf_to_xyz(sunecf);
+		sunlight.position.set(sunxyz[0], sunxyz[1], sunxyz[2]);
 		this.scene.add(sunlight);
-		
+		// Use a SatPoint instead of doing this manually?
+
 		// Ambient light for night-side visibility
 		this.scene.add(new THREE.AmbientLight(0x202020));
 
