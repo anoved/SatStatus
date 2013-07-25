@@ -4,7 +4,31 @@
 		<meta charset="utf-8">
 		<title>SatTrace Graphics</title>
 		
-		<link rel="stylesheet" href="css/globe.css" type="text/css" media="screen" />
+		<style type="text/css">
+			body {
+				margin: 0;
+			}
+			
+			div#graphics-container-1 {
+				display: block;
+				position: absolute;
+				top: 0;
+				right: 50%;
+				left: 0;
+				bottom: 0;
+				background-color: black;
+			}
+			
+			div#graphics-container-2 {
+				display: block;
+				position: absolute;
+				top: 0;
+				right: 0;
+				left: 50%;
+				bottom: 0;
+				background-color: cyan;
+			}
+		</style>
 		
 		<!-- Three.js graphics -->
 		<script src="js/three.js/build/three.js"></script>
@@ -21,15 +45,16 @@
 	</head>
 	<body>
 		
-		<div id="graphics-container"></div>
+		<div id="graphics-container-1"></div>
+		<div id="graphics-container-2"></div>
 		
 		<script>
 			
-			var scene = new SatScene("graphics-container");			
+			var scene = new SatScene("graphics-container-1");
 			scene.addTrace("tle/iss.tle");
 			scene.addTrace("tle/vanguard.tle");
 			
 		</script>
-				
+		
 	</body>
 </html>

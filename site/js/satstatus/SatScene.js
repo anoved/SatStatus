@@ -8,9 +8,12 @@ function SatScene(containerId) {
 	// cribbed from globe.js test
 	
 	this.init = function(containerId) {
-
+		
+		this.container = document.getElementById(containerId);
+		
 		// Camera
-		this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+		var aspect = this.container.offsetWidth / this.container.offsetHeight;
+		this.camera = new THREE.PerspectiveCamera(75, aspect, 1, 10000);
 		this.camera.position.set(250, 0, 0);
 		
 		// Controls
@@ -23,12 +26,11 @@ function SatScene(containerId) {
 		
 		// Renderer (.CanvasRenderer or .WebGLRenderer)
 		this.renderer = new THREE.WebGLRenderer();
-		this.renderer.setSize(window.innerWidth, window.innerHeight);
+		this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
 			
-		// Attach the renderer and the stats monitor to the page.
-		var container = document.getElementById(containerId);
-		container.appendChild(this.renderer.domElement);
-		window.addEventListener('resize', this.onWindowResize.bind(this), false);
+		// Attach the renderer to the page.
+		this.container.appendChild(this.renderer.domElement);
+		window.addEventListener('resize', this.onContainerResize.bind(this), false);
 		
 		this.render();
 	}
@@ -68,10 +70,11 @@ function SatScene(containerId) {
 		this.renderer.render(this.scene, this.camera);
 	}
 	
-	this.onWindowResize = function() {
-		this.camera.aspect = window.innerWidth / window.innerHeight;
+	this.onContainerResize = function() {
+		var aspect = this.container.offsetWidth / this.container.offsetHeight;
+		this.camera.aspect = aspect;
 		this.camera.updateProjectionMatrix();
-		this.renderer.setSize(window.innerWidth, window.innerHeight);
+		this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
 		this.render();
 	}
 	
