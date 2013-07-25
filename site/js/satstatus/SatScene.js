@@ -4,9 +4,7 @@
  * Manages a 3d display
  */
 function SatScene(containerId) {
-
-	var container, camera, controls, scene, renderer, sun, traces;
-
+	
 	this.init = function(containerId) {
 		
 		this.container = document.getElementById(containerId);
