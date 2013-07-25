@@ -5,6 +5,16 @@
  */
 function SatScene(containerId) {
 	
+	/*
+	 * SatScene.init
+	 * 
+	 * Parameters:
+	 *   containerId, id of div to contain scene display (fills div dimensions)
+	 * 
+	 * Results:
+	 *   creates a Three.js display environment populated with basic elements
+	 *   and attaches it to the specified div.
+	 */
 	this.init = function(containerId) {
 		
 		this.container = document.getElementById(containerId);
@@ -33,9 +43,15 @@ function SatScene(containerId) {
 		this.render();
 	}
 	
+	/*
+	 * SatScene.setupScene
+	 * 
+	 * Populate the scene with basic elements: Earth and illumination.
+	 * 
+	 */
 	this.setupScene = function() {
 		
-		// Welcome to Earf.
+		// Earth
 		var earthTexture = new THREE.Texture();
 		var loader = new THREE.ImageLoader();
 		loader.addEventListener('load', (function(context){
@@ -56,18 +72,37 @@ function SatScene(containerId) {
 		
 		// Ambient light for night-side visibility
 		this.scene.add(new THREE.AmbientLight(0x202020));
-
 	}
 	
+	/*
+	 * SatScene.animate
+	 * 
+	 * The controller update method invokes the SatScene render method if
+	 * necessary (as the "change" event handler associated above). Then, this
+	 * method is scheduled to run again at next available animation frame.
+	 * 
+	 */
 	this.animate = function() {
-		requestAnimationFrame(this.animate.bind(this));
 		this.controls.update();
+		requestAnimationFrame(this.animate.bind(this));
 	}
 	
+	/*
+	 * SatScene.render
+	 * 
+	 * Render the scene as seen from the camera.
+	 */
 	this.render = function() {
 		this.renderer.render(this.scene, this.camera);
 	}
 	
+	/*
+	 * SatScene.onContainerResize
+	 * 
+	 * Respond to window resize events by recalculating camera aspect ratio and
+	 * adjusting renderer dimensions. Explicitly calls render method to redraw.
+	 * 
+	 */
 	this.onContainerResize = function() {
 		var aspect = this.container.offsetWidth / this.container.offsetHeight;
 		this.camera.aspect = aspect;
@@ -76,6 +111,19 @@ function SatScene(containerId) {
 		this.render();
 	}
 	
+	/*
+	 * SatScene.addTrace
+	 * 
+	 * Parameters:
+	 *   satId, identifier of satellite to add to the scene
+	 *   startTime, date of initial trace position (defaults to now)
+	 * 
+	 * Results:
+	 *   creates a new SatTrace and adds it to the traces array
+	 * 
+	 * Returns:
+	 *   the new SatTrace object
+	 */
 	this.addTrace = function(satId, startTime) {
 		if (startTime === undefined) {
 			startTime = new Date;
@@ -85,14 +133,16 @@ function SatScene(containerId) {
 		return trace;
 	}
 	
-	// constructor actions
 	this.traces = [];
 	this.init(containerId);
 	this.animate();
-	
 	window.addEventListener("renderEvent", this.render.bind(this), false);
 }
 
+/* consider that if it's been longer than a certain interval since the last
+ * update, it may be desirable to actually dispatch a sequence of update events
+ * spread over the intervening period in order to maintain a smooth display.
+ * (actually, that is something for SatTrace.update to handle internally) */
 /* temporary test helper. Dispatches an updateDisplay event with current time. */
 /* window.setInterval(UpdateSatTrace, 5000) - run it every five seconds */
 function UpdateDisplay() {
