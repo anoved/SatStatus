@@ -1,0 +1,25 @@
+I'm starting to think that treating the points array as a circular loop
+with no start or end (other than this "oldestPoint" index which must be
+manually maintained) is an instant of premature optimization (intended
+to avoid incurring whatever costs are incurred by creating new SatPoint
+objects instead of reusing existing ones to represent new trace points).
+
+Conceptually it would be more honest and accurate to treat the points
+array as a queue. The oldest points in the trace are shifted out of the
+queue as current points are pushed on.
+
+This will require some changes to how we handle the display - but not
+too much trouble. Basically, a point's updateGeometry method is called
+when created, and a new deleteGeometry method is called before the
+point is shifted out of the queue. Updating the style (color/shading)
+will work as it does now in updateDisplay. The main difference is that
+updateGeometry will be invoked during trace update, not as a separate
+step - since doing so would require maintaining indices pointing to the
+newly added points, where as rendering at calculation time avoids that.
+
+This also clarifies how to handle dynamically changing trace length, I
+think. Normally, we simply check queue.length after adding new points
+and shift out as many as necessary to fit within limit. Increase the
+limit value, and fewer points will be removed on the next update.
+Likewise, decrease the limit value, and more will will be removed.
+As now, styling pass will consult current queue.length to calculate %s.
