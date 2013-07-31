@@ -11,7 +11,9 @@ queue as current points are pushed on.
 This will require some changes to how we handle the display - but not
 too much trouble. Basically, a point's updateGeometry method is called
 when created, and a new deleteGeometry method is called before the
-point is shifted out of the queue. Updating the style (color/shading)
+point is shifted out of the queue. (Current concealGeometry will work.)
+
+Updating the style (color/shading)
 will work as it does now in updateDisplay. The main difference is that
 updateGeometry will be invoked during trace update, not as a separate
 step - since doing so would require maintaining indices pointing to the

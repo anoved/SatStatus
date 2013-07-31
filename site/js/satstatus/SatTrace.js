@@ -70,20 +70,76 @@ function SatTrace(scene, id, initialDate) {
 		this.tleLines = this.tleText.split("\n", 2);
 		this.satrec = satellite.twoline2satrec(this.tleLines[0], this.tleLines[1]);
 		
+		
 		// populate initial point array with minutes preceding initial reference date
 		var startMilliseconds = this.referenceDate.getTime();
 		for(var i = this.pointCount - 1; i >= 0; i--) {
-			this.updateOldestPoint(new Date(startMilliseconds - (i * 60000)));
+			var date = new Date(startMilliseconds - (i * 60000));
+			var sp = new SatPoint(date);
+			this.points.push(sp);
+			
+			// should have a method that accepts a date parameter
+			// which creates a satpoint; renders it; pushes it on points[],
+			// and shifts something off points if necessary.
+			
+			// likewise, a higher-level method that accepts a date,
+			// and interpolates number of dates needed between last and that,
+			
+			
+			
 		}
 		
 		// initialize trace display
 		for(var i = 1; i < this.points.length; i++) {
-			this.points[i].updateGeometry(this.scene, this.points[i-1]);
 			this.points[i].updateStyle(this.referenceDate);
 		}
 		
 		window.addEventListener("updateDisplay", this.updateHandler.bind(this), false);
 		window.dispatchEvent(new CustomEvent("renderEvent"));
+	}
+	
+	
+	this.updateTrace = function(newDate, lastDate) {
+		
+		// use the date of the most recent point in the array if no explicit lastDate
+		if (lastDate === undefined) {
+			// breaks if this.points.length == 0
+			lastDate = this.points[this.points.length - 1].date;
+		}
+		
+		/*
+			
+			var period = newDate - lastDate;
+			
+			// interval is the maximum period allowed between points
+			var points = Math.ceil(period / interval);
+			
+			// limit number of points to add to the max queue length
+			if (points > limit) {
+				points = limit;
+			}
+			
+			for (var i = points - 1; i >= 0; i--) {
+				
+				// pointDate == newDate for last point (i == 0)
+				var pointDate = newDate - (i * interval);
+				
+				var newSatPoint = new SatPoint(pointDate);
+				
+				// render new point using reference to preceding point
+				var previousPoint = this.points[this.points.length - 1];
+				// or if this.points.length == 0, previousPoint = undefined
+				newSatPoint.updateGeometry(this.scene, previousPoint);
+				
+				this.points.push(newSatPoint);
+				
+				if (this.points.length > limit) {
+					this.points.shift();
+				}
+				
+			}
+		*/
+	
 	}
 	
 	/*
