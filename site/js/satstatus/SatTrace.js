@@ -61,63 +61,18 @@ function SatTrace(scene, id, initialDate) {
 	 * 
 	 * Results:
 	 *   caches TLE data in SatTrace member properties. Generates SGP4 satrec
-	 *   object based on TLE data. Will [re]populate SatPoint array. (Note that
-	 *   array population should behave correctly if the array already exists -
-	 *   so that this method may safely be called to update existing SatTraces.)
+	 *   object based on TLE data. Populates initial SatPoint array.
 	 */
 	this.setup = function(tleText) {
-		
 		
 		this.tleText = tleText;
 		this.tleLines = this.tleText.split("\n", 2);
 		this.satrec = satellite.twoline2satrec(this.tleLines[0], this.tleLines[1]);
 		
-		var backdate = new Date(this.referenceDate.getTime() - 5400000);
-		this.updateTrace(this.referenceDate, backdate);
+		this.updateTrace();
 		this.updateDisplay();
-	
+		
 		window.addEventListener("updateDisplay", this.updateHandler.bind(this), false);
-		window.dispatchEvent(new CustomEvent("renderEvent"));
-	}
-	
-	
-	this.updateTrace = function(newDate, lastDate) {
-		
-		// use the date of the most recent point in the array if no explicit lastDate
-		if (lastDate === undefined) {
-			if (this.points.length == 0) {
-				// throw an error - no explicit lastDate and none implicit
-			}
-			lastDate = this.points[this.points.length - 1].date;
-		}
-		
-		var period = newDate.getTime() - lastDate.getTime();
-		
-		var interval = 60000;
-		
-		var limit = this.pointCount;
-		
-		var newPointCount = Math.min(Math.ceil(period/interval), limit);
-		
-		// add newDate last, as well as pointCount points every interval ms before
-		for (var i = newPointCount - 1; i >= 0; i--) {
-			
-			var pointDate = new Date(newDate.getTime() - (i * interval));
-			
-			var newSatPoint = new SatPoint(this.satrec, pointDate);
-			
-			var previousIndex = this.points.length - 1;
-			var previousPoint = (previousIndex >= 0 ? this.points[previousIndex] : undefined);
-			
-			newSatPoint.updateGeometry(this.scene, previousPoint);
-			
-			this.points.push(newSatPoint);
-			
-			if (this.points.length > limit) {
-				var disposed = this.points.shift();
-				disposed.sp3d.concealGeometry(this.scene)
-			}
-		}
 	}
 	
 	/*
@@ -128,37 +83,82 @@ function SatTrace(scene, id, initialDate) {
 	 * 
 	 * Results:
 	 *   Caches event date as SatTrace reference date.
-	 *   Invokes .updateDisplay() to update trace display based on points.
+	 *   Updates SatPoint trace array to current reference date.
+	 *   Invokes .updateDisplay() to update trace display.
 	 * 
 	 */
 	this.updateHandler = function(updateEvent) {
 		this.referenceDate = updateEvent.detail.time;
-		this.updateTrace(this.referenceDate);
+		this.updateTrace();
 		this.updateDisplay();
+	}
+	
+	/*
+	 * SatTrace.updateTrace
+	 * 
+	 * Populates SatPoint array with as many new points as necessary to extend
+	 * trace to the current referenceDate. If the SatPoint array is empty,
+	 * populates it with points representing a period before initial date.
+	 *  
+	 */
+	this.updateTrace = function() {
+		
+		// calculate millisecond period between current referenceTime and last.
+		var referenceTime = this.referenceDate.getTime();
+		if (this.points.length == 0) {
+			// initialization - start 90 minutes before initial reference date
+			precedingTime = referenceTime - 5400000;
+		} else {
+			precedingTime = this.points[this.points.length - 1].unixTime;
+		}
+		var period = referenceTime - precedingTime;
+		
+		// number of new points to add to trace - between 1 and this.limit
+		var pointCount = Math.min(Math.ceil(period/this.interval), this.limit);
+		
+		// add new points to trace, starting w/oldest and ending w/referenceDate.
+		for (var i = pointCount - 1; i >= 0; i--) {
+			
+			// calculate date and position of new point
+			var newTime = referenceTime - (i * this.interval);
+			var newDate = new Date(newTime);
+			var newPoint = new SatPoint(this.satrec, newDate);
+			
+			// undefined previousPoint case occurs only at initialization
+			var previousIndex = this.points.length - 1;
+			var previousPoint = (previousIndex >= 0 ? this.points[previousIndex] : undefined);
+			
+			newPoint.updateGeometry(this.scene, previousPoint);
+			this.points.push(newPoint);
+			
+			// if queue is full, remove old points from scene and array
+			if (this.points.length > this.limit) {
+				var disposed = this.points.shift();
+				disposed.sp3d.concealGeometry(this.scene)
+			}
+		}
 	}
 	
 	/*
 	 * SatTrace.updateDisplay
 	 * 
 	 * Update the trace displays based on current contents of SatPoint array
-	 * and the current referenceDate. 
+	 * and the current referenceDate. Consider event-based style updating. 
 	 * 
 	 */
 	this.updateDisplay = function() {
-		
-		// what if points could just respond to an eg updateStyle event?
-		// update all the point styles
 		for (var i = 0; i < this.points.length; i++) {
 			this.points[i].updateStyle(this.referenceDate);
 		}
 	}
 	
-	// an array of SatPoints representing the path of this SatTrace
-	this.points = [];
-		
-	// the number of points to maintain in the points array.
-	this.pointCount = 90;
+	// maximum number of points in trace array
+	this.limit = 90;
 	
+	// maximum millisecond interval between points
+	this.interval = 60000;
+	
+	this.points = [];
 	this.scene = scene;
 	this.id = id;
 	this.referenceDate = initialDate || new Date;
