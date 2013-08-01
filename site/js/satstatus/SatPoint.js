@@ -5,7 +5,7 @@
  *   satrec, satellite.js object
  *   date, Javascript date 
  */
-function SatPoint(satrec, date) {
+function SatPoint(satrec, date, scene) {
 	
 	/*
 	 * SatPoint.update
@@ -15,6 +15,7 @@ function SatPoint(satrec, date) {
 	 * Parameters:
 	 *   satrec is the satellite object to use for calculations
 	 *   date is the timestamp for this update
+	 *   scene is the 3d display context
 	 * 
 	 * Results:
 	 *   timestamp and coordinate members are updated.
@@ -55,24 +56,24 @@ function SatPoint(satrec, date) {
 		this.geo = [satellite.degrees_long(this.geo_rad[0]), satellite.degrees_lat(this.geo_rad[1]), this.geo_rad[2]];
 		
 		// Update display-specific coordinates (100 km per 1 unit).
-		this.sp3d.updateLocation(this.ecf[0]/100.0, this.ecf[2]/100.0, this.ecf[1]/100.0 * -1.0);
+		this.sp3d.update(this.ecf[0]/100.0, this.ecf[2]/100.0, this.ecf[1]/100.0 * -1.0);
 		
 	}
 	
-	this.sp3d = new SatPoint3d(this);
-	this.update(satrec, date);
-	
-	this.draw = function(scene, previousPoint) {
-		this.sp3d.updateGeometry(scene, previousPoint);
+	this.draw = function(previousPoint) {
+		this.sp3d.draw(previousPoint);
 	}
 	
-	this.erase = function(scene) {
-		this.sp3d.concealGeometry(scene);
+	this.erase = function() {
+		this.sp3d.erase();
 	}
 	
 	this.restyle = function(referenceDate) {
-		this.sp3d.updateStyle(referenceDate);
+		this.sp3d.restyle(referenceDate);
 	}
+	
+	this.sp3d = new SatPoint3d(this, scene);
+	this.update(satrec, date);
 }
 
 /*
@@ -81,7 +82,7 @@ function SatPoint(satrec, date) {
  * Parameter:
  *   parent SatPoint object reference
  */
-function SatPoint3d(parent) {
+function SatPoint3d(parent, scene) {
 	
 	// coordinates of this point in 3d display coordinate system
 	this.xyz = undefined;
@@ -92,8 +93,11 @@ function SatPoint3d(parent) {
 	// the parent SatPoint object
 	this.parent = parent;
 	
+	// the Three.js scene in which this point will appear
+	this.scene = scene;
+	
 	/*
-	 * SatPoint3d.updateLocation
+	 * SatPoint3d.update
 	 * 
 	 * Parameters:
 	 *   new x, y, and z coordinates in 3d display coordinate system
@@ -103,110 +107,49 @@ function SatPoint3d(parent) {
 	 *   Otherwise updates .xyz Vector3 with new coordinates.
 	 * 
 	 */
-	this.updateLocation = function(x, y, z) {
+	this.update = function(x, y, z) {
 		if (this.xyz === undefined) {
 			this.xyz = new THREE.Vector3(x, y, z);
 		} else {
 			this.xyz.set(x, y, z);
 		}
 	}
-		
+	
 	/*
-	 * SatPoint.updateGeometry
-	 * 
+	 * SatPoint3d.draw
+	 *
 	 * Parameters:
-	 *   scene is the THREE.js scene to which the geometry should be shown
-	 *   previousPoint is a reference to a previous SatPoint, used to draw path.
-	 *    (if undefined, this point has no predecessor and should not be shown)
+	 *   previousPoint is the SatPoint representing the sat's previous location
+	 *
+	 * Results:
+	 *   3d representation of this point is created and added to scene
 	 */
-	this.updateGeometry = function(scene, previousPoint) {
-		if (previousPoint === undefined) {
-			this.concealGeometry(scene);
-		} else {
-			this.displayGeometry(scene, previousPoint);
+	this.draw = function(previousPoint) {
+		// does nothing if already drawn
+		if (this.pathLine === undefined && previousPoint !== undefined) {
+			var geometry = new THREE.Geometry();
+			geometry.vertices.push(previousPoint.sp3d.xyz, this.xyz);
+			var material = new THREE.LineBasicMaterial({linewidth: 4, transparent: true});
+			this.pathLine = new THREE.Line(geometry, material);
+			this.scene.add(this.pathLine);
 		}
 	}
 	
 	/*
-	 * SatPoint.concealGeometry
-	 * 
-	 * Parameter:
-	 *   scene is the THREE.js scene from which this point should be concealed
-	 * 
-	 * Result:
+	 * SatPoint3d.erase
+	 *
+	 * Results:
 	 *   if this point exists and is present in scene, it is removed from scene
 	 */
-	this.concealGeometry = function(scene) {
+	this.erase = function() {
+		// does nothing if not already drawn
 		if (this.pathLine !== undefined) {
-			scene.remove(this.pathLine);
+			this.scene.remove(this.pathLine);
 		}
 	}
-	
+
 	/*
-	 * SatPoint.displayGeometry
-	 * 
-	 * Parameters:
-	 *   scene is the THREE.js scene in which this point should be displayed
-	 *   previousPoint is the SatPoint representing sat's previous location.
-	 * 
-	 * Results:
-	 *   3d representation of point is created or updated as needed.
-	 * 
-	 */
-	this.displayGeometry = function(scene, previousPoint) {
-		if (this.pathLine === undefined) {
-			this.createGeometry(scene, previousPoint);
-		} else {
-			this.setGeometry(scene, previousPoint);
-		}
-	}
-	
-	/*
-	 * SatPoint.createGeometry
-	 *
-	 * Parameters:
-	 *   scene is the THREE.js scene in which this point should be displayed
-	 *   previousPoint is the SatPoint representing sat's previous location.
-	 *
-	 * Results:
-	 *   3d representation of this point is created and added to scene.
-	 */
-	this.createGeometry = function(scene, previousPoint) {
-		var geometry = new THREE.Geometry();
-		geometry.vertices.push(previousPoint.sp3d.xyz);
-		geometry.vertices.push(this.xyz);
-		
-		// expect to adjust material color & opacity, etc, based on point age
-		var material = new THREE.LineBasicMaterial({linewidth: 4, transparent: true});
-		
-		this.pathLine = new THREE.Line(geometry, material);
-		scene.add(this.pathLine);
-	}
-	
-	/*
-	 * SatPoint.setGeometry
-	 * 
-	 * Parameters:
-	 *   scene is the THREE.js scene in which this point should be displayed
-	 *   previousPoint is the SatPoint representing sat's previous location.
-	 * 
-	 * Results:
-	 *   3d representation of this point is updated and re-added to scene if
-	 *     necessary.
-	 */
-	this.setGeometry = function(scene, previousPoint) {
-		this.pathLine.geometry.vertices[0].copy(previousPoint.sp3d.xyz);
-		this.pathLine.geometry.vertices[1].copy(this.xyz);
-		this.pathLine.geometry.verticesNeedUpdate = true;
-		
-		// restore line to scene if it appears to have been removed
-		if (this.pathLine.parent === undefined) {
-			scene.add(this.pathLine);
-		}
-	}
-	
-	/*
-	 * SatPoint3d.updateStyle
+	 * SatPoint3d.restyle
 	 * 
 	 * Parameters:
 	 *   referenceDate is current display time
@@ -214,15 +157,14 @@ function SatPoint3d(parent) {
 	 * Results:
 	 *   this SatPoint3d material is restyled to reflect age
 	 */
-	this.updateStyle = function(referenceDate) {
-		var age = referenceDate.getTime() - this.parent.unixTime;
-		// age factor related to maximum age of display (eg, 90 minutes in ms)
-		var factor = 1 - (age / 5400000);
-		if (this.pathLine !== undefined) {
+	this.restyle = function(referenceDate) {
+		// does nothing if not already drawn
+		if (this.pathLine !== undefined) {	
+			var age = referenceDate.getTime() - this.parent.unixTime;
+			// age factor related to maximum age of display (eg, 90 minutes in ms)
+			var factor = 1 - (age / 5400000);
 			this.pathLine.material.color.setRGB(0.8 * factor + 0.2, 0, 0);
 			this.pathLine.material.opacity = 0.8 * factor + 0.2;
 		}
 	}
-
-	
 }

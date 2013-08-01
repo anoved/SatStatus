@@ -122,13 +122,13 @@ function SatTrace(scene, id, initialDate) {
 			// calculate date and position of new point
 			var newTime = referenceTime - (i * this.interval);
 			var newDate = new Date(newTime);
-			var newPoint = new SatPoint(this.satrec, newDate);
+			var newPoint = new SatPoint(this.satrec, newDate, this.scene);
 			
 			// undefined previousPoint case occurs only at initialization
 			var previousIndex = this.points.length - 1;
 			var previousPoint = (previousIndex >= 0 ? this.points[previousIndex] : undefined);
 			
-			newPoint.draw(this.scene, previousPoint);
+			newPoint.draw(previousPoint);
 			this.points.push(newPoint);
 			
 			// if queue is full, remove old points from scene and array
