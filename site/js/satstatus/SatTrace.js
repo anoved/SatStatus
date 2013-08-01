@@ -95,13 +95,9 @@ function SatTrace(scene, id, initialDate) {
 		
 		var interval = 60000;
 		
-		// maximum number of points in array (90) - disambiguate with pointCount
 		var limit = this.pointCount;
 		
-		
 		var newPointCount = Math.min(Math.ceil(period/interval), limit);
-		
-		console.log("Adding " + newPointCount + " new points...");
 		
 		// add newDate last, as well as pointCount points every interval ms before
 		for (var i = newPointCount - 1; i >= 0; i--) {
@@ -118,9 +114,8 @@ function SatTrace(scene, id, initialDate) {
 			this.points.push(newSatPoint);
 			
 			if (this.points.length > limit) {
-				var disposePoint = this.points.shift();
-				// remove from scene
-				disposePoint.concealGeometry();
+				var disposed = this.points.shift();
+				disposed.sp3d.concealGeometry(this.scene)
 			}
 		}
 	}
@@ -133,7 +128,6 @@ function SatTrace(scene, id, initialDate) {
 	 * 
 	 * Results:
 	 *   Caches event date as SatTrace reference date.
-	 *   Invokes .updateOldestPoint() to replace old point with new point.
 	 *   Invokes .updateDisplay() to update trace display based on points.
 	 * 
 	 */
@@ -141,7 +135,6 @@ function SatTrace(scene, id, initialDate) {
 		this.referenceDate = updateEvent.detail.time;
 		this.updateTrace(this.referenceDate);
 		this.updateDisplay();
-		window.dispatchEvent(new CustomEvent("renderEvent"));
 	}
 	
 	/*
@@ -153,6 +146,7 @@ function SatTrace(scene, id, initialDate) {
 	 */
 	this.updateDisplay = function() {
 		
+		// what if points could just respond to an eg updateStyle event?
 		// update all the point styles
 		for (var i = 0; i < this.points.length; i++) {
 			this.points[i].updateStyle(this.referenceDate);
@@ -161,18 +155,8 @@ function SatTrace(scene, id, initialDate) {
 	
 	// an array of SatPoints representing the path of this SatTrace
 	this.points = [];
-	
-	// the index of the oldest point in the points array. On trace update,
-	// the oldest point is updated in place rather than shifting array.
-	this.oldestPoint = 0;
-	
-	// the number of points to maintain in the points array. at present,
-	// modifying this value will not necessarily have intended results -
-	// increasing it should effectively insert a span of empty elements after
-	// oldestPoint, so that they can be populated on next update without losing
-	// old points. Likewise, decreasing pointCount should delete oldest x
-	// elements, ending with current oldestPoint. So, use methods to help with
-	// these adjustments rather than modifying pointCount directly.
+		
+	// the number of points to maintain in the points array.
 	this.pointCount = 90;
 	
 	this.scene = scene;
