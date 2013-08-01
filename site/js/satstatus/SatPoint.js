@@ -115,7 +115,7 @@ function SatPoint3d(parent) {
 	 * Parameters:
 	 *   scene is the THREE.js scene to which the geometry should be shown
 	 *   previousPoint is a reference to a previous SatPoint, used to draw path.
-	 *    (if undefined, this point has no predecessor and should be shown)
+	 *    (if undefined, this point has no predecessor and should not be shown)
 	 */
 	this.updateGeometry = function(scene, previousPoint) {
 		if (previousPoint === undefined) {
