@@ -62,11 +62,15 @@ function SatPoint(satrec, date) {
 	this.sp3d = new SatPoint3d(this);
 	this.update(satrec, date);
 	
-	this.updateGeometry = function(scene, previousPoint) {
+	this.draw = function(scene, previousPoint) {
 		this.sp3d.updateGeometry(scene, previousPoint);
 	}
 	
-	this.updateStyle = function(referenceDate) {
+	this.erase = function(scene) {
+		this.sp3d.concealGeometry(scene);
+	}
+	
+	this.restyle = function(referenceDate) {
 		this.sp3d.updateStyle(referenceDate);
 	}
 }
@@ -106,7 +110,7 @@ function SatPoint3d(parent) {
 			this.xyz.set(x, y, z);
 		}
 	}
-	
+		
 	/*
 	 * SatPoint.updateGeometry
 	 * 

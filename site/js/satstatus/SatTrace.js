@@ -128,13 +128,13 @@ function SatTrace(scene, id, initialDate) {
 			var previousIndex = this.points.length - 1;
 			var previousPoint = (previousIndex >= 0 ? this.points[previousIndex] : undefined);
 			
-			newPoint.updateGeometry(this.scene, previousPoint);
+			newPoint.draw(this.scene, previousPoint);
 			this.points.push(newPoint);
 			
 			// if queue is full, remove old points from scene and array
 			if (this.points.length > this.limit) {
-				var disposed = this.points.shift();
-				disposed.sp3d.concealGeometry(this.scene)
+				var oldPoint = this.points.shift();
+				oldPoint.erase(this.scene);
 			}
 		}
 	}
@@ -148,7 +148,7 @@ function SatTrace(scene, id, initialDate) {
 	 */
 	this.updateDisplay = function() {
 		for (var i = 0; i < this.points.length; i++) {
-			this.points[i].updateStyle(this.referenceDate);
+			this.points[i].restyle(this.referenceDate);
 		}
 	}
 	
