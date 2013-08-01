@@ -66,34 +66,16 @@ function SatTrace(scene, id, initialDate) {
 	 *   so that this method may safely be called to update existing SatTraces.)
 	 */
 	this.setup = function(tleText) {
+		
+		
 		this.tleText = tleText;
 		this.tleLines = this.tleText.split("\n", 2);
 		this.satrec = satellite.twoline2satrec(this.tleLines[0], this.tleLines[1]);
 		
-		
-		// populate initial point array with minutes preceding initial reference date
-		var startMilliseconds = this.referenceDate.getTime();
-		for(var i = this.pointCount - 1; i >= 0; i--) {
-			var date = new Date(startMilliseconds - (i * 60000));
-			var sp = new SatPoint(date);
-			this.points.push(sp);
-			
-			// should have a method that accepts a date parameter
-			// which creates a satpoint; renders it; pushes it on points[],
-			// and shifts something off points if necessary.
-			
-			// likewise, a higher-level method that accepts a date,
-			// and interpolates number of dates needed between last and that,
-			
-			
-			
-		}
-		
-		// initialize trace display
-		for(var i = 1; i < this.points.length; i++) {
-			this.points[i].updateStyle(this.referenceDate);
-		}
-		
+		var backdate = new Date(this.referenceDate.getTime() - 5400000);
+		this.updateTrace(this.referenceDate, backdate);
+		this.updateDisplay();
+	
 		window.addEventListener("updateDisplay", this.updateHandler.bind(this), false);
 		window.dispatchEvent(new CustomEvent("renderEvent"));
 	}
@@ -103,43 +85,44 @@ function SatTrace(scene, id, initialDate) {
 		
 		// use the date of the most recent point in the array if no explicit lastDate
 		if (lastDate === undefined) {
-			// breaks if this.points.length == 0
+			if (this.points.length == 0) {
+				// throw an error - no explicit lastDate and none implicit
+			}
 			lastDate = this.points[this.points.length - 1].date;
 		}
 		
-		/*
+		var period = newDate.getTime() - lastDate.getTime();
+		
+		var interval = 60000;
+		
+		// maximum number of points in array (90) - disambiguate with pointCount
+		var limit = this.pointCount;
+		
+		
+		var newPointCount = Math.min(Math.ceil(period/interval), limit);
+		
+		console.log("Adding " + newPointCount + " new points...");
+		
+		// add newDate last, as well as pointCount points every interval ms before
+		for (var i = newPointCount - 1; i >= 0; i--) {
 			
-			var period = newDate - lastDate;
+			var pointDate = new Date(newDate.getTime() - (i * interval));
 			
-			// interval is the maximum period allowed between points
-			var points = Math.ceil(period / interval);
+			var newSatPoint = new SatPoint(this.satrec, pointDate);
 			
-			// limit number of points to add to the max queue length
-			if (points > limit) {
-				points = limit;
+			var previousIndex = this.points.length - 1;
+			var previousPoint = (previousIndex >= 0 ? this.points[previousIndex] : undefined);
+			
+			newSatPoint.updateGeometry(this.scene, previousPoint);
+			
+			this.points.push(newSatPoint);
+			
+			if (this.points.length > limit) {
+				var disposePoint = this.points.shift();
+				// remove from scene
+				disposePoint.concealGeometry();
 			}
-			
-			for (var i = points - 1; i >= 0; i--) {
-				
-				// pointDate == newDate for last point (i == 0)
-				var pointDate = newDate - (i * interval);
-				
-				var newSatPoint = new SatPoint(pointDate);
-				
-				// render new point using reference to preceding point
-				var previousPoint = this.points[this.points.length - 1];
-				// or if this.points.length == 0, previousPoint = undefined
-				newSatPoint.updateGeometry(this.scene, previousPoint);
-				
-				this.points.push(newSatPoint);
-				
-				if (this.points.length > limit) {
-					this.points.shift();
-				}
-				
-			}
-		*/
-	
+		}
 	}
 	
 	/*
@@ -156,92 +139,19 @@ function SatTrace(scene, id, initialDate) {
 	 */
 	this.updateHandler = function(updateEvent) {
 		this.referenceDate = updateEvent.detail.time;
-		this.updateOldestPoint();
+		this.updateTrace(this.referenceDate);
 		this.updateDisplay();
-	}
-	
-	/*
-	 * SatTrace.updateOldestPoint
-	 * 
-	 * Updates the oldestPoint, using updatePoint, to current referenceDate.
-	 * 
-	 * Parameters:
-	 *   updateDate, optional explicit date for position update
-	 *     (default is this.referenceDate)
-	 * 
-	 * Results:
-	 *   invokes SatTrace.updatePoint() on oldest point
-	 *   oldestPoint property is updated.
-	 * 
-	 * Returns:
-	 *   the updated SatPoint
-	 */
-	this.updateOldestPoint = function(updateDate) {
-		
-		var date = updateDate || this.referenceDate;
-		
-		var point = this.updatePoint(this.oldestPoint, date);
-		
-		// update oldestPoint property to point at what is now the oldest point.
-		if (this.oldestPoint + 1 < this.pointCount) {
-			this.oldestPoint++;
-		} else {
-			this.oldestPoint = 0;
-		}
-		
-		return point;
-	}
-	
-	/*
-	 * SatTrace.updatePoint
-	 * 
-	 * Updates specified point to position at current referenceDate.
-	 * 
-	 * Parameters:
-	 *   index of point to update
-	 *   updateDate, optional explicit date for position update.
-	 *     (default is this.referenceDate)
-	 * 
-	 * Results:
-	 *   if this.points[index] exists, updates with .update() method
-	 *   if this.points[index] is undefined, assigns new SatPoint().
-	 * 
-	 * Returns:
-	 *   the updated SatPoint
-	 */
-	this.updatePoint = function(index, updateDate) {
-		
-		var date = updateDate || this.referenceDate;
-		
-		// reuse existing SatPoint objects rather than repeated delete/create.
-		if (typeof(this.points[index]) === 'undefined') {
-			this.points[index] = new SatPoint(this.satrec, date);
-		} else {
-			try {
-				this.points[index].update(this.satrec, date);
-			} catch (e) {
-				console.log(e);
-			}
-		}	
-		return this.points[index];
+		window.dispatchEvent(new CustomEvent("renderEvent"));
 	}
 	
 	/*
 	 * SatTrace.updateDisplay
 	 * 
 	 * Update the trace displays based on current contents of SatPoint array
-	 * and the current referenceDate. (Updates display geometry and styles.) 
+	 * and the current referenceDate. 
 	 * 
 	 */
 	this.updateDisplay = function() {
-
-		// hide the oldest point
-		this.points[this.oldestPoint].updateGeometry(this.scene, undefined);
-		
-		// update geometry of newest point
-		var newestIndex = (this.oldestPoint == 0 ? this.points.length - 1 : this.oldestPoint - 1);
-		var previousIndex = (newestIndex == 0 ? this.points.length - 1 : newestIndex - 1);
-		this.points[newestIndex].updateGeometry(this.scene, this.points[previousIndex]);
 		
 		// update all the point styles
 		for (var i = 0; i < this.points.length; i++) {
