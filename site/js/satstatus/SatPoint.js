@@ -24,8 +24,6 @@ function SatPoint(satrec, date) {
 		
 		// Dates
 		
-		this.date = date;
-		
 		// Unix timestamp (milliseconds since unix epoch)
 		this.unixTime = date.getTime();
 		
