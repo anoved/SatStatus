@@ -112,79 +112,6 @@ function SatScene(containerId) {
 	}
 	
 	/*
-	 * SatScene.getCameraOrbitAngle
-	 * 
-	 * Returns:
-	 *   camera angle in radians from prime meridian
-	 */
-	this.getCameraOrbitAngle = function() {
-		return Math.atan2(this.camera.position.z, this.camera.position.x);		
-	}
-	
-	/*
-	 * SatScene.setCameraOrbitAngle
-	 * 
-	 * Parameter:
-	 *   angle in radians from prime meridian
-	 * 
-	 * Returns:
-	 *   camera angle in radians from prime meridian (wrapped to 0..2pi)
-	 * 
-	 * Results:
-	 *   camera is orbited around earth axis to the requested angle from the
-	 *   prime meridian. Camera radius and equatorial elevation are preserved. 
-	 */
-	this.setCameraOrbitAngle = function(angle) {
-		
-		// wrap angle to 0..2PI
-		var theta = angle - (Math.PI * 2) * Math.floor(angle / (Math.PI * 2));
-		
-		// preserve phi (angle above/below equatorial plane)
-		var phi = Math.atan2(Math.sqrt(this.camera.position.x * this.camera.position.x + this.camera.position.z * this.camera.position.z ), this.camera.position.y );
-		var radius = this.camera.position.length();
-		
-		this.camera.position.x = radius * Math.sin(phi) * Math.cos(theta);
-		this.camera.position.y = radius * Math.cos(phi);
-		this.camera.position.z = radius * Math.sin(phi) * Math.sin(theta);
-		
-		return theta;
-	}
-	
-	/*
-	 * SatScene.addCameraOrbitAngle
-	 * 
-	 * Parameter:
-	 *   angleDelta, angle in radians to add to current camera orbit angle
-	 * 
-	 * Returns:
-	 *   camera angle in radians from prime meridian
-	 * 
-	 * Results:
-	 *   camera is orbited to its current position plus angleDelta 
-	 */
-	this.addCameraOrbitAngle = function(angleDelta) {
-		return this.setCameraOrbitAngle(this.getCameraOrbitAngle() + angleDelta);
-	}
-	
-	/*
-	 * SatScene.addCameraOrbitSeconds
-	 * 
-	 * Parameter:
-	 *   seconds; orbit camera around earth by increment earth rotates in seconds
-	 * 
-	 * Returns:
-	 *   camera angle in radians from prime meridian
-	 * 
-	 * Results:
-	 *   camera is orbited to its current position plus angle earth rotates in seconds
-	 */
-	this.addCameraOrbitSeconds = function(seconds) {
-		// 43200 is seconds per PI radians earth rotation
-		var angle = (Math.PI * seconds) / 43200;
-		return this.addCameraOrbitAngle(angle);
-	}
-	
-	/*
 	 * SatScene.addTrace
 	 * 
 	 * Parameters:
@@ -211,6 +138,7 @@ function SatScene(containerId) {
 	this.animate();
 	window.addEventListener("renderEvent", this.render.bind(this), false);
 }
+
 
 /* consider that if it's been longer than a certain interval since the last
  * update, it may be desirable to actually dispatch a sequence of update events
