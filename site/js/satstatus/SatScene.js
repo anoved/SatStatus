@@ -139,7 +139,6 @@ function SatScene(containerId) {
 	window.addEventListener("renderEvent", this.render.bind(this), false);
 }
 
-
 /* consider that if it's been longer than a certain interval since the last
  * update, it may be desirable to actually dispatch a sequence of update events
  * spread over the intervening period in order to maintain a smooth display.

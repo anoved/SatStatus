@@ -3,7 +3,7 @@
  * Returns:
  *   camera angle in radians from prime meridian
  */
-THREE.PerspectiveCamera.prototype.getCameraOrbitAngle = function() {
+THREE.Camera.prototype.getCameraOrbitAngle = function() {
 	return Math.atan2(this.position.z, this.position.x);		
 }
 
@@ -18,7 +18,7 @@ THREE.PerspectiveCamera.prototype.getCameraOrbitAngle = function() {
  *   camera is orbited around earth axis to the requested angle from the
  *   prime meridian. Camera radius and equatorial elevation are preserved. 
  */
-THREE.PerspectiveCamera.prototype.setCameraOrbitAngle = function(angle) {
+THREE.Camera.prototype.setCameraOrbitAngle = function(angle) {
 	
 	// wrap angle to 0..2PI
 	var theta = angle - (Math.PI * 2) * Math.floor(angle / (Math.PI * 2));
@@ -44,22 +44,58 @@ THREE.PerspectiveCamera.prototype.setCameraOrbitAngle = function(angle) {
  * Results:
  *   camera is orbited to its current position plus angleDelta 
  */
-THREE.PerspectiveCamera.prototype.addCameraOrbitAngle = function(angleDelta) {
+THREE.Camera.prototype.addCameraOrbitAngle = function(angleDelta) {
 	return this.setCameraOrbitAngle(this.getCameraOrbitAngle() + angleDelta);
 }
 
-/* 
- * Parameter:
- *   seconds; orbit camera around earth by increment earth rotates in seconds
+/*
+ * [time]ToRadians Functions
  * 
- * Returns:
- *   camera angle in radians from prime meridian
- * 
- * Results:
- *   camera is orbited to its current position plus angle earth rotates in seconds
+ * Returns radians corresponding to rotation of the specified time period.
  */
-THREE.PerspectiveCamera.prototype.addCameraOrbitSeconds = function(seconds) {
-	// 43200 is seconds per PI radians earth rotation
-	var angle = (Math.PI * seconds) / 43200;
-	return this.addCameraOrbitAngle(angle);
+
+function daysToRadians(days) {
+	return Math.PI * 2 * days;
+}
+
+function hoursToRadians(hours) {
+	return Math.PI / 12 * hours;
+}
+
+function minutesToRadians(minutes) {
+	return Math.PI / 720 * minutes;
+}
+
+function secondsToRadians(seconds) {
+	return Math.PI / 43200 * seconds;
+}
+
+function millisecondsToRadians(milliseconds) {
+	return Math.PI / 43200000 * milliseconds;
+}
+
+/*
+ * addCameraOrbit[Time] methods
+ * 
+ * Orbits camera around origin by angle corresponding to specified time period.
+ */
+
+THREE.Camera.prototype.addCameraOrbitDays = function(days) {
+	return this.addCameraOrbitAngle(daysToRadians(days));
+}
+
+THREE.Camera.prototype.addCameraOrbitHours = function(hours) {
+	return this.addCameraOrbitAngle(hoursToRadians(hours));
+}
+
+THREE.Camera.prototype.addCameraOrbitMinutes = function(minutes) {
+	return this.addCameraOrbitAngle(minutesToRadians(minutes));
+}
+
+THREE.Camera.prototype.addCameraOrbitSeconds = function(seconds) {
+	return this.addCameraOrbitAngle(secondsToRadians(seconds));
+}
+
+THREE.Camera.prototype.addCameraOrbitMilliseconds = function(milliseconds) {
+	return this.addCameraOrbitAngle(millisecondsToRadians(milliseconds));
 }
