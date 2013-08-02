@@ -167,6 +167,24 @@ function SatScene(containerId) {
 	}
 	
 	/*
+	 * SatScene.addCameraOrbitSeconds
+	 * 
+	 * Parameter:
+	 *   seconds; orbit camera around earth by increment earth rotates in seconds
+	 * 
+	 * Returns:
+	 *   camera angle in radians from prime meridian
+	 * 
+	 * Results:
+	 *   camera is orbited to its current position plus angle earth rotates in seconds
+	 */
+	this.addCameraOrbitSeconds = function(seconds) {
+		// 43200 is seconds per PI radians earth rotation
+		var angle = (Math.PI * seconds) / 43200;
+		return this.addCameraOrbitAngle(angle);
+	}
+	
+	/*
 	 * SatScene.addTrace
 	 * 
 	 * Parameters:
