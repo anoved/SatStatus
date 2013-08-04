@@ -163,7 +163,7 @@ function SatPoint3d(parent, scene) {
 			var age = referenceDate.getTime() - this.parent.unixTime;
 			// age factor related to maximum age of display (eg, 90 minutes in ms)
 			var factor = 1 - (age / 5400000);
-			this.pathLine.material.color.setRGB(0.8 * factor + 0.2, 0, 0);
+			this.pathLine.material.color.setRGB(0, 0.8 * factor + 0.2, 0.3);
 			this.pathLine.material.opacity = 0.8 * factor + 0.2;
 		}
 	}

@@ -34,8 +34,11 @@ function SatScene(containerId) {
 		
 		// Renderer (.CanvasRenderer or .WebGLRenderer)
 		this.renderer = new THREE.WebGLRenderer();
-		this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
-			
+		//this.renderer.setFaceCulling(THREE.CullFaceNone);
+		
+		this.effect = new THREE.AnaglyphEffect(this.renderer);
+		this.effect.setSize(this.container.offsetWidth, this.container.offsetHeight);
+		
 		// Attach the renderer to the page.
 		this.container.appendChild(this.renderer.domElement);
 		window.addEventListener('resize', this.onContainerResize.bind(this), false);
@@ -93,7 +96,8 @@ function SatScene(containerId) {
 	 * Render the scene as seen from the camera.
 	 */
 	this.render = function() {
-		this.renderer.render(this.scene, this.camera);
+		this.effect.render(this.scene, this.camera);
+
 	}
 	
 	/*
@@ -107,7 +111,7 @@ function SatScene(containerId) {
 		var aspect = this.container.offsetWidth / this.container.offsetHeight;
 		this.camera.aspect = aspect;
 		this.camera.updateProjectionMatrix();
-		this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
+		this.effect.setSize(this.container.offsetWidth, this.container.offsetHeight);
 		this.render();
 	}
 	
