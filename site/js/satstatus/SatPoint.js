@@ -4,6 +4,7 @@
  * Input:
  *   satrec, satellite.js object
  *   date, Javascript date 
+ *   scene is the 3d display context for this point
  */
 function SatPoint(satrec, date, scene) {
 	
@@ -15,7 +16,6 @@ function SatPoint(satrec, date, scene) {
 	 * Parameters:
 	 *   satrec is the satellite object to use for calculations
 	 *   date is the timestamp for this update
-	 *   scene is the 3d display context
 	 * 
 	 * Results:
 	 *   timestamp and coordinate members are updated.
@@ -81,6 +81,7 @@ function SatPoint(satrec, date, scene) {
  * 
  * Parameter:
  *   parent SatPoint object reference
+ *   scene is the 3d display context for this point
  */
 function SatPoint3d(parent, scene) {
 	
@@ -102,6 +103,9 @@ function SatPoint3d(parent, scene) {
 	 * Parameters:
 	 *   new x, y, and z coordinates in 3d display coordinate system
 	 * 
+	 * Returns:
+	 *   newly created or updated this.xyz (a Vector3 object)
+	 * 
 	 * Results:
 	 *   If .xyz member is undefined, create as new Vector3 with x, y, z.
 	 *   Otherwise updates .xyz Vector3 with new coordinates.
@@ -113,6 +117,24 @@ function SatPoint3d(parent, scene) {
 		} else {
 			this.xyz.set(x, y, z);
 		}
+		return this.xyz;
+	}
+	
+	/*
+	 * SatPoint3d.updateVector
+	 * 
+	 * Parameters:
+	 *   xyzVector is a three-element array containing x, y, and z coordinates
+	 * 
+	 * Returns:
+	 *   newly created or updated this.xyz (a Vector3 object)
+	 * 
+	 * Results:
+	 *   invokes this.update with x, y, and z vector coords (elements 0, 1, 2)
+	 * s
+	 */
+	this.updateVector = function(xyzVector) {
+		return this.update(xyzVector[0], xyzVector[1], xyzVector[2]);
 	}
 	
 	/*
