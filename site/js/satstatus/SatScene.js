@@ -22,7 +22,11 @@ function SatScene(containerId) {
 		// Camera
 		var aspect = this.container.offsetWidth / this.container.offsetHeight;
 		this.camera = new THREE.PerspectiveCamera(75, aspect, 1, 10000);
-		this.camera.position.set(250, 0, 0);
+		// initial position should be set more logically. If there's no trace
+		// yet, perhaps adding the first trace (or any trace) should update
+		// display to look at current location. Alternatively, focus on user
+		// geo-ip location. Or, some other significant longitude - noon?
+		this.camera.position.set(kmToDisplayUnits(25000), 0, 0);
 		
 		// Controls
 		this.controls = new THREE.OrbitControls(this.camera);
@@ -62,7 +66,7 @@ function SatScene(containerId) {
 			};
 			})(this));
 		loader.load('images/textures/earthmap1k.jpg');
-		var earthGeometry = new THREE.SphereGeometry(63.71, 24, 24);
+		var earthGeometry = new THREE.SphereGeometry(kmToDisplayUnits(6371), 24, 24);
 		var earthMaterial = new THREE.MeshLambertMaterial({map: earthTexture, overdraw: true});
 		var earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
 		this.scene.add(earthMesh);
@@ -137,6 +141,29 @@ function SatScene(containerId) {
 	this.init(containerId);
 	this.animate();
 	window.addEventListener("renderEvent", this.render.bind(this), false);
+}
+
+/*
+ * Parameter:
+ *   km kilometers
+ * 
+ * Returns:
+ *   km equivalent in 3d display units
+ */
+function kmToDisplayUnits(km) {
+	return km / 100.0;
+}
+
+/*
+ * Parameter:
+ *   ecf coordinate array (x y z km)
+ * 
+ * Return:
+ *   3d display coordinate array
+ *   (x, z, -y in display units)
+ */
+function ecfToDisplayCoordinates(ecf) {
+	return [kmToDisplayUnits(ecf[0]), kmToDisplayUnits(ecf[2]), kmToDisplayUnits(-1 * ecf[1])];
 }
 
 /* consider that if it's been longer than a certain interval since the last
