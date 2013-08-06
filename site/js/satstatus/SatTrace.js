@@ -103,18 +103,33 @@ function SatTrace(scene, id, initialDate) {
 	 */
 	this.updateTrace = function() {
 		
+		var suppress = false;
+		
 		// calculate millisecond period between current referenceTime and last.
 		var referenceTime = this.referenceDate.getTime();
 		if (this.points.length == 0) {
 			// initialization - start 90 minutes before initial reference date
 			precedingTime = referenceTime - 5400000;
+			suppress = true;
 		} else {
 			precedingTime = this.points[this.points.length - 1].unixTime;
 		}
 		var period = referenceTime - precedingTime;
 		
-		// number of new points to add to trace - between 1 and this.limit
-		var pointCount = Math.min(Math.ceil(period/this.interval), this.limit);
+		// number of new points needed to extend trace to cover update period 
+		var pointCount = Math.ceil(period/this.interval);
+		
+		// constrain number of new points to maximum length of trace array
+		if (pointCount > this.limit) {
+			pointCount = this.limit;
+			
+			// if the period between the first point of refresh array and the
+			// last pre-existing point exceeds the update interval, suppress
+			// drawing any connection between them.
+			if (period - ((pointCount - 1) * this.interval) > this.interval) {
+				suppress = true;
+			}
+		}
 		
 		// add new points to trace, starting w/oldest and ending w/referenceDate.
 		for (var i = pointCount - 1; i >= 0; i--) {
@@ -124,10 +139,17 @@ function SatTrace(scene, id, initialDate) {
 			var newDate = new Date(newTime);
 			var newPoint = new SatPoint(this.satrec, newDate, this.scene);
 			
-			// undefined previousPoint case occurs only at initialization
-			var previousIndex = this.points.length - 1;
-			var previousPoint = (previousIndex >= 0 ? this.points[previousIndex] : undefined);
+			if (suppress) {
+				// suppressed points are not drawn connected to any previous
+				// points; either 1st in trace, or 1st after long update delay
+				var previousPoint = undefined;
+				suppress = false;
+			} else {
+				// normally, points are drawn connected to previous trace point
+				var previousPoint = this.points[this.points.length - 1];
+			}
 			
+			// display the new point and add it to the trace array
 			newPoint.draw(previousPoint);
 			this.points.push(newPoint);
 			
