@@ -56,7 +56,7 @@ function SatPoint(satrec, date, scene) {
 		this.geo = [satellite.degrees_long(this.geo_rad[0]), satellite.degrees_lat(this.geo_rad[1]), this.geo_rad[2]];
 		
 		// Update display-specific coordinates (100 km per 1 unit).
-		this.sp3d.updateVector(ecfToDisplayCoordinates(this.ecf));
+		this.sp3d.updateVector(SceneUtils.ecfToDisplayCoordinates(this.ecf));
 		
 	}
 	

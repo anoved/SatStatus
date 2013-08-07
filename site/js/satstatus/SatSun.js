@@ -38,7 +38,7 @@ function SatSun(scene, initialDate) {
 		
 		this.ecf = satellite.eci_to_ecf(this.eci, this.siderealTime);
 		
-		this.xyz = ecfToDisplayCoordinates(this.ecf);
+		this.xyz = SceneUtils.ecfToDisplayCoordinates(this.ecf);
 				
 		// Display
 		

@@ -26,7 +26,7 @@ function SatScene(containerId) {
 		// yet, perhaps adding the first trace (or any trace) should update
 		// display to look at current location. Alternatively, focus on user
 		// geo-ip location. Or, some other significant longitude - noon?
-		this.camera.position.set(kmToDisplayUnits(25000), 0, 0);
+		this.camera.position.set(SceneUtils.kmToDisplayUnits(25000), 0, 0);
 		
 		// Controls
 		this.controls = new THREE.OrbitControls(this.camera);
@@ -66,7 +66,7 @@ function SatScene(containerId) {
 			};
 			})(this));
 		loader.load('images/textures/earthmap1k.jpg');
-		var earthGeometry = new THREE.SphereGeometry(kmToDisplayUnits(6371), 24, 24);
+		var earthGeometry = new THREE.SphereGeometry(SceneUtils.kmToDisplayUnits(6371), 24, 24);
 		var earthMaterial = new THREE.MeshLambertMaterial({map: earthTexture, overdraw: true});
 		var earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
 		this.scene.add(earthMesh);
@@ -143,28 +143,31 @@ function SatScene(containerId) {
 	window.addEventListener("renderEvent", this.render.bind(this), false);
 }
 
-/*
- * Parameter:
- *   km kilometers
- * 
- * Returns:
- *   km equivalent in 3d display units
- */
-function kmToDisplayUnits(km) {
-	return km / 100.0;
-}
-
-/*
- * Parameter:
- *   ecf coordinate array (x y z km)
- * 
- * Return:
- *   3d display coordinate array
- *   (x, z, -y in display units)
- */
-function ecfToDisplayCoordinates(ecf) {
-	return [kmToDisplayUnits(ecf[0]), kmToDisplayUnits(ecf[2]), kmToDisplayUnits(-1 * ecf[1])];
-}
+var SceneUtils = {
+	
+	/*
+	 * Parameter:
+	 *   km kilometers
+	 * 
+	 * Returns:
+	 *   km equivalent in 3d display units
+	 */
+	kmToDisplayUnits: function(km) {
+		return km / 100.0;
+	},
+	
+	/*
+	 * Parameter:
+	 *   ecf coordinate array (x y z km)
+	 * 
+	 * Return:
+	 *   3d display coordinate array
+	 *   (x, z, -y in display units)
+	 */
+	ecfToDisplayCoordinates: function(ecf) {
+		return [this.kmToDisplayUnits(ecf[0]), this.kmToDisplayUnits(ecf[2]), this.kmToDisplayUnits(-1 * ecf[1])];
+	}
+};
 
 /* consider that if it's been longer than a certain interval since the last
  * update, it may be desirable to actually dispatch a sequence of update events
