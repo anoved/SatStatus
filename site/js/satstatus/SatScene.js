@@ -169,10 +169,6 @@ var SceneUtils = {
 	}
 };
 
-/* consider that if it's been longer than a certain interval since the last
- * update, it may be desirable to actually dispatch a sequence of update events
- * spread over the intervening period in order to maintain a smooth display.
- * (actually, that is something for SatTrace.update to handle internally) */
 /* temporary test helper. Dispatches an updateDisplay event with current time. */
 /* window.setInterval(UpdateSatTrace, 5000) - run it every five seconds */
 function UpdateDisplay() {
