@@ -114,23 +114,25 @@ function SatTrace(scene, id, initialDate) {
 		} else {
 			precedingTime = this.points[this.points.length - 1].unixTime;
 		}
+		
+		// we are requesting an update to cover the period from preceding to reference
 		var period = referenceTime - precedingTime;
+		
+		// clip requested period to maximum to prevent excessive/unnecessary updates
+		if (period > TraceUtils.maximumTraceAge) {
+			period = TraceUtils.maximumTraceAge;
+		}
 		
 		// number of new points needed to extend trace to cover update period 
 		var pointCount = Math.ceil(period/TraceUtils.maximumInterval);
 		
-		// constrain number of new points to maximum length of trace array
-		if (pointCount > TraceUtils.maximumQueueLength) {
-			pointCount = TraceUtils.maximumQueueLength;
-			
-			// if the period between the first point of refresh array and the
-			// last pre-existing point exceeds the update interval, suppress
-			// drawing any connection between them.
-			if (period - ((pointCount - 1) * TraceUtils.maximumInterval) > TraceUtils.maximumInterval) {
-				suppress = true;
-			}
+		// if the period between the first point of refresh array and the
+		// last pre-existing point exceeds the update interval, suppress
+		// drawing any connection between them.
+		if (period - ((pointCount - 1) * TraceUtils.maximumInterval) > TraceUtils.maximumInterval) {
+			suppress = true;
 		}
-		
+	
 		// add new points to trace, starting w/oldest and ending w/referenceDate.
 		for (var i = pointCount - 1; i >= 0; i--) {
 			
@@ -152,12 +154,12 @@ function SatTrace(scene, id, initialDate) {
 			// display the new point and add it to the trace array
 			newPoint.draw(previousPoint);
 			this.points.push(newPoint);
-			
-			// if queue is full, remove old points from scene and array
-			if (this.points.length > TraceUtils.maximumQueueLength) {
-				var oldPoint = this.points.shift();
-				oldPoint.erase(this.scene);
-			}
+		}
+		
+		/* shift old points out of the queue as needed to keep age within limit */
+		while (referenceTime - this.points[0].unixTime > TraceUtils.maximumTraceAge) {
+			var oldPoint = this.points.shift();
+			oldPoint.erase(this.scene);
 		}
 	}
 	
@@ -199,12 +201,6 @@ var TraceUtils = {
 	 * (5400000 milliseconds = 90 minutes)
 	 */
 	maximumTraceAge: 5400000,
-	
-	/*
-	 * Maximum length of the array used to store trace points. Planned for
-	 * deprecation; the trace should be constrained by age, not array size.
-	 */
-	maximumQueueLength: 90,
 	
 	/*
 	 * Returns:
