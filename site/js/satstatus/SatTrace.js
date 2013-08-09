@@ -155,11 +155,23 @@ function SatTrace(scene, id, initialDate) {
 			newPoint.draw(previousPoint);
 			this.points.push(newPoint);
 			
-			// shift old points out of the queue as needed to keep age within limit
-			while (referenceTime - this.points[0].unixTime > TraceUtils.maximumTraceAge) {
-				var oldPoint = this.points.shift();
-				oldPoint.erase(this.scene);
-			}
+			// remove any old points from trace
+			this.trimTrace();
+		}
+	}
+	
+	/*
+	 * SatTrace.trimTrace
+	 * 
+	 * Results:
+	 *   shifts old points off this.points queue until the oldest point is
+	 *   within TraceUtils.maximumTraceAge milliseconds of this.referenceDate.
+	 */
+	this.trimTrace = function() {
+		var latestTime = this.referenceDate.getTime();
+		while (latestTime - this.points[0].unixTime > TraceUtils.maximumTraceAge) {
+			var stalePoint = this.points.shift();
+			stalePoint.erase();
 		}
 	}
 	
