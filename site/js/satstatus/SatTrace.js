@@ -108,7 +108,6 @@ function SatTrace(scene, id, initialDate) {
 		// calculate millisecond period between current referenceTime and last.
 		var referenceTime = this.referenceDate.getTime();
 		if (this.points.length == 0) {
-			// initialization - start 90 minutes before initial reference date
 			precedingTime = referenceTime - TraceUtils.maximumTraceAge;
 			suppress = true;
 		} else {
@@ -121,18 +120,12 @@ function SatTrace(scene, id, initialDate) {
 		// clip requested period to maximum to prevent excessive/unnecessary updates
 		if (period > TraceUtils.maximumTraceAge) {
 			period = TraceUtils.maximumTraceAge;
+			suppress = true;
 		}
 		
 		// number of new points needed to extend trace to cover update period 
 		var pointCount = Math.ceil(period/TraceUtils.maximumInterval);
 		
-		// if the period between the first point of refresh array and the
-		// last pre-existing point exceeds the update interval, suppress
-		// drawing any connection between them.
-		if (period - ((pointCount - 1) * TraceUtils.maximumInterval) > TraceUtils.maximumInterval) {
-			suppress = true;
-		}
-	
 		// add new points to trace, starting w/oldest and ending w/referenceDate.
 		for (var i = pointCount - 1; i >= 0; i--) {
 			
