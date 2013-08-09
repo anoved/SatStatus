@@ -120,8 +120,8 @@ function SatTrace(scene, id, initialDate) {
 		var pointCount = Math.ceil(period/TraceUtils.maximumInterval);
 		
 		// constrain number of new points to maximum length of trace array
-		if (pointCount > this.limit) {
-			pointCount = this.limit;
+		if (pointCount > TraceUtils.maximumQueueLength) {
+			pointCount = TraceUtils.maximumQueueLength;
 			
 			// if the period between the first point of refresh array and the
 			// last pre-existing point exceeds the update interval, suppress
@@ -154,7 +154,7 @@ function SatTrace(scene, id, initialDate) {
 			this.points.push(newPoint);
 			
 			// if queue is full, remove old points from scene and array
-			if (this.points.length > this.limit) {
+			if (this.points.length > TraceUtils.maximumQueueLength) {
 				var oldPoint = this.points.shift();
 				oldPoint.erase(this.scene);
 			}
@@ -173,9 +173,6 @@ function SatTrace(scene, id, initialDate) {
 			this.points[i].restyle(this.referenceDate);
 		}
 	}
-	
-	// maximum number of points in trace array
-	this.limit = 90;
 	
 	this.points = [];
 	this.scene = scene;
@@ -202,6 +199,12 @@ var TraceUtils = {
 	 * (5400000 milliseconds = 90 minutes)
 	 */
 	maximumTraceAge: 5400000,
+	
+	/*
+	 * Maximum length of the array used to store trace points. Planned for
+	 * deprecation; the trace should be constrained by age, not array size.
+	 */
+	maximumQueueLength: 90,
 	
 	/*
 	 * Returns:
