@@ -154,12 +154,12 @@ function SatTrace(scene, id, initialDate) {
 			// display the new point and add it to the trace array
 			newPoint.draw(previousPoint);
 			this.points.push(newPoint);
-		}
-		
-		/* shift old points out of the queue as needed to keep age within limit */
-		while (referenceTime - this.points[0].unixTime > TraceUtils.maximumTraceAge) {
-			var oldPoint = this.points.shift();
-			oldPoint.erase(this.scene);
+			
+			// shift old points out of the queue as needed to keep age within limit
+			while (referenceTime - this.points[0].unixTime > TraceUtils.maximumTraceAge) {
+				var oldPoint = this.points.shift();
+				oldPoint.erase(this.scene);
+			}
 		}
 	}
 	
