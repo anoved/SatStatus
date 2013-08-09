@@ -184,7 +184,7 @@ function SatPoint3d(parent, scene) {
 		if (this.pathLine !== undefined) {	
 			var age = referenceDate.getTime() - this.parent.unixTime;
 			// age factor related to maximum age of display (eg, 90 minutes in ms)
-			var factor = 1 - (age / 5400000);
+			var factor = TraceUtils.ageFactor(age);
 			this.pathLine.material.color.setRGB(0.8 * factor + 0.2, 0, 0);
 			this.pathLine.material.opacity = 0.8 * factor + 0.2;
 		}

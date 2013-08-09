@@ -109,7 +109,7 @@ function SatTrace(scene, id, initialDate) {
 		var referenceTime = this.referenceDate.getTime();
 		if (this.points.length == 0) {
 			// initialization - start 90 minutes before initial reference date
-			precedingTime = referenceTime - 5400000;
+			precedingTime = referenceTime - TraceUtils.maximumTraceAge;
 			suppress = true;
 		} else {
 			precedingTime = this.points[this.points.length - 1].unixTime;
@@ -117,7 +117,7 @@ function SatTrace(scene, id, initialDate) {
 		var period = referenceTime - precedingTime;
 		
 		// number of new points needed to extend trace to cover update period 
-		var pointCount = Math.ceil(period/this.interval);
+		var pointCount = Math.ceil(period/TraceUtils.maximumInterval);
 		
 		// constrain number of new points to maximum length of trace array
 		if (pointCount > this.limit) {
@@ -126,7 +126,7 @@ function SatTrace(scene, id, initialDate) {
 			// if the period between the first point of refresh array and the
 			// last pre-existing point exceeds the update interval, suppress
 			// drawing any connection between them.
-			if (period - ((pointCount - 1) * this.interval) > this.interval) {
+			if (period - ((pointCount - 1) * TraceUtils.maximumInterval) > TraceUtils.maximumInterval) {
 				suppress = true;
 			}
 		}
@@ -135,7 +135,7 @@ function SatTrace(scene, id, initialDate) {
 		for (var i = pointCount - 1; i >= 0; i--) {
 			
 			// calculate date and position of new point
-			var newTime = referenceTime - (i * this.interval);
+			var newTime = referenceTime - (i * TraceUtils.maximumInterval);
 			var newDate = new Date(newTime);
 			var newPoint = new SatPoint(this.satrec, newDate, this.scene);
 			
@@ -177,12 +177,39 @@ function SatTrace(scene, id, initialDate) {
 	// maximum number of points in trace array
 	this.limit = 90;
 	
-	// maximum millisecond interval between points
-	this.interval = 60000;
-	
 	this.points = [];
 	this.scene = scene;
 	this.id = id;
 	this.referenceDate = initialDate || new Date;
 	this.load(id);
 }
+
+var TraceUtils = {
+	
+	/*
+	 * Maximum allowable interval between trace points, in milliseconds.
+	 * If a period greater than this interval elapses between trace updates,
+	 * additional trace points are automatically interpolated before update.
+	 * 
+	 * (60000 milliseconds = 1 minute)
+	 */
+	maximumInterval: 60000,
+	
+	/*
+	 * Maximum age of trace (time elapsed between oldest and newest points),
+	 * in milliseconds. Ideally, traces should be maintained *at* this length.
+	 * 
+	 * (5400000 milliseconds = 90 minutes)
+	 */
+	maximumTraceAge: 5400000,
+	
+	/*
+	 * Returns:
+	 *   value between 0 and 1, where 1 represents "new" and 0 represents "old"
+	 *   (0 may be returned for any age parameter over a maximum threshold)
+	 */
+	ageFactor: function(age) {
+		// need to clip age if > max to prevent weird negative results
+		return 1 - (age / this.maximumTraceAge);
+	}
+};
