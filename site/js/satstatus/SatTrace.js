@@ -99,6 +99,10 @@ function SatTrace(scene, id, initialDate) {
 	 * Populates SatPoint array with as many new points as necessary to extend
 	 * trace to the current referenceDate. If the SatPoint array is empty,
 	 * populates it with points representing a period before initial date.
+	 * 
+	 * Returns:
+	 *   [pointCount, period], tuple representing number of points added to the
+	 *   trace, over given period in milliseconds since last update (or max)
 	 *  
 	 */
 	this.updateTrace = function() {
@@ -151,6 +155,8 @@ function SatTrace(scene, id, initialDate) {
 			// remove any old points from trace
 			this.trimTrace();
 		}
+		
+		return [pointCount, period];
 	}
 	
 	/*
