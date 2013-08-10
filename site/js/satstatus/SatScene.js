@@ -120,6 +120,7 @@ function SatScene(containerId) {
 	 * 
 	 * Parameters:
 	 *   satId, identifier of satellite to add to the scene
+	 *   color, color of this satellite trace (defaults to red)
 	 *   startTime, date of initial trace position (defaults to now)
 	 * 
 	 * Results:
@@ -128,11 +129,14 @@ function SatScene(containerId) {
 	 * Returns:
 	 *   the new SatTrace object
 	 */
-	this.addTrace = function(satId, startTime) {
+	this.addTrace = function(satId, color, startTime) {
+		if (color === undefined) {
+			color = 0xFF0000;
+		}
 		if (startTime === undefined) {
 			startTime = new Date;
 		}
-		var trace = new SatTrace(this.scene, satId, startTime);
+		var trace = new SatTrace(this.scene, satId, startTime, color);
 		this.traces.push(trace);
 		return trace;
 	}

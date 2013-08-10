@@ -1,4 +1,4 @@
-function SatTrace(scene, id, initialDate) { 
+function SatTrace(scene, id, initialDate, color) { 
 	
 	/*
 	 * SatTrace.load
@@ -136,7 +136,7 @@ function SatTrace(scene, id, initialDate) {
 			// calculate date and position of new point
 			var newTime = referenceTime - (i * TraceUtils.maximumInterval);
 			var newDate = new Date(newTime);
-			var newPoint = new SatPoint(this.satrec, newDate, this.scene);
+			var newPoint = new SatPoint(this.satrec, newDate, this.scene, this.color);
 			
 			if (suppress) {
 				// suppressed points are not drawn connected to any previous
@@ -149,7 +149,7 @@ function SatTrace(scene, id, initialDate) {
 			}
 			
 			// display the new point and add it to the trace array
-			newPoint.draw(previousPoint);
+			newPoint.draw(previousPoint, this.color);
 			this.points.push(newPoint);
 			
 			// remove any old points from trace
@@ -189,6 +189,7 @@ function SatTrace(scene, id, initialDate) {
 		}
 	}
 	
+	this.color = color;
 	this.points = [];
 	this.scene = scene;
 	this.id = id;

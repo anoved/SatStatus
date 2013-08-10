@@ -6,7 +6,7 @@
  *   date, Javascript date 
  *   scene is the 3d display context for this point
  */
-function SatPoint(satrec, date, scene) {
+function SatPoint(satrec, date, scene, color) {
 	
 	/*
 	 * SatPoint.update
@@ -72,6 +72,7 @@ function SatPoint(satrec, date, scene) {
 		this.sp3d.restyle(referenceDate);
 	}
 	
+	this.color = color;
 	this.sp3d = new SatPoint3d(this, scene);
 	this.update(satrec, date);
 }
@@ -151,7 +152,7 @@ function SatPoint3d(parent, scene) {
 		if (this.pathLine === undefined && previousPoint !== undefined) {
 			var geometry = new THREE.Geometry();
 			geometry.vertices.push(previousPoint.sp3d.xyz, this.xyz);
-			var material = new THREE.LineBasicMaterial({linewidth: 4, transparent: true, color: 0xFF0000});
+			var material = new THREE.LineBasicMaterial({linewidth: 4, transparent: true, color: this.parent.color});
 			this.pathLine = new THREE.Line(geometry, material);
 			this.scene.add(this.pathLine);
 		}
