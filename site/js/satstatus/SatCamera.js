@@ -31,6 +31,12 @@ THREE.Camera.prototype.setCameraOrbitAngle = function(angle) {
 	this.position.y = radius * Math.cos(phi);
 	this.position.z = radius * Math.sin(phi) * Math.sin(theta);
 	
+	// needed to prevent herky jerky jitter.
+	// note that we can probably collapse some of these custom camera
+	// methods into the OrbitControls, since that's actually an
+	// extension of camera as well.
+	this.lookAt(new THREE.Vector3(0,0,0));
+	
 	return theta;
 }
 

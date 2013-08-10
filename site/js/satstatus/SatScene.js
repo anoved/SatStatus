@@ -182,3 +182,33 @@ function UpdateDisplay() {
 	// hacky - updateDisplay handlers may not be done in time for render event.
 	window.dispatchEvent(new CustomEvent("renderEvent"));
 }
+
+var gAnimationId = undefined, gAnimationTime;
+
+function StartAnimation() {
+	if (gAnimationId !== undefined) {
+		return;
+	}
+	gAnimationTime = new Date;
+	gAnimationId = window.setInterval(AnimationHandler, 100);
+}
+
+function StopAnimation() {
+	if (gAnimationId === undefined) {
+		return;
+	}
+	window.clearInterval(gAnimationId);
+	gAnimationId = undefined;
+}
+
+function AnimationHandler(e) {
+	var event = new CustomEvent("updateDisplay", {"detail": {"time": gAnimationTime}});
+	gAnimationTime = new Date(gAnimationTime.getTime() + 60000);
+	// passing increment literally for now; if scene caches referenceDate,
+	// camera handler should be able to computer period since last update itself
+	scene.camera.addCameraOrbitAngle(millisecondsToRadians(60000));
+	//scene.controls.rotateLeft(millisecondsToRadians(60000));
+	window.dispatchEvent(event);
+	//scene.render(); // equivalent?
+	window.dispatchEvent(new CustomEvent("renderEvent"));
+}
