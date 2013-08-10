@@ -151,7 +151,7 @@ function SatPoint3d(parent, scene) {
 		if (this.pathLine === undefined && previousPoint !== undefined) {
 			var geometry = new THREE.Geometry();
 			geometry.vertices.push(previousPoint.sp3d.xyz, this.xyz);
-			var material = new THREE.LineBasicMaterial({linewidth: 4, transparent: true});
+			var material = new THREE.LineBasicMaterial({linewidth: 4, transparent: true, color: 0xFF0000});
 			this.pathLine = new THREE.Line(geometry, material);
 			this.scene.add(this.pathLine);
 		}
@@ -183,8 +183,7 @@ function SatPoint3d(parent, scene) {
 	this.restyle = function(factor) {
 		// does nothing if not already drawn
 		if (this.pathLine !== undefined) {	
-			this.pathLine.material.color.setRGB(0.8 * factor + 0.2, 0, 0);
-			this.pathLine.material.opacity = 0.8 * factor + 0.2;
+			this.pathLine.material.opacity = factor;
 		}
 	}
 }
