@@ -174,17 +174,15 @@ function SatPoint3d(parent, scene) {
 	 * SatPoint3d.restyle
 	 * 
 	 * Parameters:
-	 *   referenceDate is current display time
+	 *   factor, a value in the range 0..1 where 1 represents newest point and
+	 *   0 represents oldest point (plus any points older than max trace age)
 	 * 
 	 * Results:
 	 *   this SatPoint3d material is restyled to reflect age
 	 */
-	this.restyle = function(referenceDate) {
+	this.restyle = function(factor) {
 		// does nothing if not already drawn
 		if (this.pathLine !== undefined) {	
-			var age = referenceDate.getTime() - this.parent.unixTime;
-			// age factor related to maximum age of display (eg, 90 minutes in ms)
-			var factor = TraceUtils.ageFactor(age);
 			this.pathLine.material.color.setRGB(0.8 * factor + 0.2, 0, 0);
 			this.pathLine.material.opacity = 0.8 * factor + 0.2;
 		}

@@ -182,8 +182,10 @@ function SatTrace(scene, id, initialDate) {
 	 * 
 	 */
 	this.updateDisplay = function() {
+		var referenceTime = this.referenceDate.getTime();
 		for (var i = 0; i < this.points.length; i++) {
-			this.points[i].restyle(this.referenceDate);
+			var age = referenceTime - this.points[i].unixTime;
+			this.points[i].restyle(TraceUtils.ageFactor(age));
 		}
 	}
 	
