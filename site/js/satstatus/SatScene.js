@@ -183,32 +183,39 @@ function UpdateDisplay() {
 	window.dispatchEvent(new CustomEvent("renderEvent"));
 }
 
-var gAnimationId = undefined, gAnimationTime;
+var Animation = {
 
-function StartAnimation() {
-	if (gAnimationId !== undefined) {
-		return;
+	timer: undefined,
+	
+	framedate: undefined,
+	
+	start: function() {
+		if (this.timer !== undefined) {
+			return;
+		}
+		if (this.framedate === undefined) {
+			this.framedate = new Date;
+		}
+		this.timer = window.setInterval(this.handler.bind(this), 100);
+		return this.timer;
+	},
+	
+	stop: function() {
+		if (this.timer === undefined) {
+			return;
+		}
+		window.clearInterval(this.timer);
+		this.timer = undefined;
+	},
+	
+	handler: function() {
+		if (this.timer === undefined) {
+			return;
+		}
+		var update = new CustomEvent("updateDisplay", {"detail": {"time": this.framedate}});
+		this.framedate = new Date(this.framedate.getTime() + 60000);
+		scene.camera.addCameraOrbitAngle(millisecondsToRadians(60000));
+		window.dispatchEvent(update);
+		window.dispatchEvent(new CustomEvent("renderEvent"));
 	}
-	gAnimationTime = new Date;
-	gAnimationId = window.setInterval(AnimationHandler, 100);
-}
-
-function StopAnimation() {
-	if (gAnimationId === undefined) {
-		return;
-	}
-	window.clearInterval(gAnimationId);
-	gAnimationId = undefined;
-}
-
-function AnimationHandler(e) {
-	var event = new CustomEvent("updateDisplay", {"detail": {"time": gAnimationTime}});
-	gAnimationTime = new Date(gAnimationTime.getTime() + 60000);
-	// passing increment literally for now; if scene caches referenceDate,
-	// camera handler should be able to computer period since last update itself
-	scene.camera.addCameraOrbitAngle(millisecondsToRadians(60000));
-	//scene.controls.rotateLeft(millisecondsToRadians(60000));
-	window.dispatchEvent(event);
-	//scene.render(); // equivalent?
-	window.dispatchEvent(new CustomEvent("renderEvent"));
-}
+};
