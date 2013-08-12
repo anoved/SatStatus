@@ -68,8 +68,8 @@ function SatPoint(satrec, date, scene, color) {
 		this.sp3d.erase();
 	}
 	
-	this.restyle = function(referenceDate) {
-		this.sp3d.restyle(referenceDate);
+	this.restyle = function(factor) {
+		this.sp3d.restyle(factor);
 	}
 	
 	this.color = color;
