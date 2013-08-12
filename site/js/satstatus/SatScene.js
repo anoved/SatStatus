@@ -3,7 +3,7 @@
  * 
  * Manages a 3d display
  */
-function SatScene(containerId) {
+function SatScene(containerId, initialDate) {
 	
 	/*
 	 * SatScene.init
@@ -122,7 +122,7 @@ function SatScene(containerId) {
 	 * Parameters:
 	 *   satId, identifier of satellite to add to the scene
 	 *   color, color of this satellite trace (defaults to red)
-	 *   startTime, date of initial trace position (defaults to now)
+	 *   startTime, date of initial trace position (defaults to scene ref date)
 	 * 
 	 * Results:
 	 *   creates a new SatTrace and adds it to the traces array
@@ -135,17 +135,33 @@ function SatScene(containerId) {
 			color = 0xFF0000;
 		}
 		if (startTime === undefined) {
-			startTime = new Date;
+			startTime = this.referenceDate;
 		}
 		var trace = new SatTrace(this.scene, satId, startTime, color);
 		this.traces.push(trace);
 		return trace;
 	}
 	
+	/*
+	 * SatScene.updateHandler
+	 * 
+	 * Parameters:
+	 *   updateEvent is a CustomEvent with a Date object as the time detail.
+	 * 
+	 * Results:
+	 *   stores updateEvent time in this.referenceDate
+	 */
+	this.updateHandler = function(updateEvent) {
+		this.referenceDate = updateEvent.detail.time;
+	}
+	
 	this.traces = [];
 	this.init(containerId);
 	this.animate();
+	this.referenceDate = initialDate || new Date;
+	
 	window.addEventListener("renderEvent", this.render.bind(this), false);
+	window.addEventListener("updateDisplay", this.updateHandler.bind(this), false);
 }
 
 var SceneUtils = {
