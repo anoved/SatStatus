@@ -30,6 +30,7 @@ function SatScene(containerId) {
 		
 		// Controls
 		this.controls = new THREE.OrbitControls(this.camera);
+		this.controls.minDistance = SceneUtils.kmToDisplayUnits(6500);
 		this.controls.addEventListener('change', this.render.bind(this));
 		
 		// Scene
