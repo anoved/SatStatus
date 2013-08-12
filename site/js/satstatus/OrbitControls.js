@@ -7,7 +7,7 @@
 
 THREE.OrbitControls = function ( object, domElement ) {
 
-	this.object = object;
+	this.object = object; // camera
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
 
 	// API
@@ -21,9 +21,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	this.userRotate = true;
 	this.userRotateSpeed = 1.0;
-
-	this.userPan = true;
-	this.userPanSpeed = 2.0;
 
 	this.autoRotate = false;
 	this.autoRotateSpeed = 2.0; // 30 seconds per round when fps is 60
@@ -57,7 +54,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	var lastPosition = new THREE.Vector3();
 
-	var STATE = { NONE: -1, ROTATE: 0, ZOOM: 1, PAN: 2 };
+	var STATE = { NONE: -1, ROTATE: 0, ZOOM: 1 };
 	var state = STATE.NONE;
 
 	// events
@@ -65,6 +62,78 @@ THREE.OrbitControls = function ( object, domElement ) {
 	var changeEvent = { type: 'change' };
 
 
+	this.getRotation = function() {
+		return Math.atan2(this.object.position.z, this.object.position.x);
+	}
+	
+	this.setRotation = function(angle) {
+		
+		var position = this.object.position;
+		
+		// wrap angle to 0..2PI
+		var theta = angle - (Math.PI * 2) * Math.floor(angle / (Math.PI * 2));
+		
+		// preserve phi (angle above/below equatorial plane)
+		var phi = Math.atan2(Math.sqrt(position.x * position.x + position.z * position.z ), position.y );
+		var radius = position.length();
+		
+		// update the camera position
+		position.x = radius * Math.sin(phi) * Math.cos(theta);
+		position.y = radius * Math.cos(phi);
+		position.z = radius * Math.sin(phi) * Math.sin(theta);
+		
+		// consider utilizing the same phiDelta mechanism the other control
+		// methods use (which is then simply applied by controls.update())
+		
+		return theta;
+	}
+	
+	this.addRotation = function(angleDelta) {
+		return this.setRotation(this.getRotation() + angleDelta);
+	}
+	
+		function daysToRadians(days) {	
+				return Math.PI * 2 * days;
+		}
+
+		function hoursToRadians(hours) {
+			return Math.PI / 12 * hours;
+		}
+
+		function minutesToRadians(minutes) {
+			return Math.PI / 720 * minutes;
+		}
+
+		function secondsToRadians(seconds) {
+			return Math.PI / 43200 * seconds;
+		}
+
+		function millisecondsToRadians(milliseconds) {
+			return Math.PI / 43200000 * milliseconds;
+		}
+
+	
+	this.addRotationDays = function(days) {
+		return this.addRotation(daysToRadians(days));
+	}
+
+	this.addRotationHours = function(hours) {
+		return this.addRotation(hoursToRadians(hours));
+	}
+
+	this.addRotationMinutes = function(minutes) {
+		return this.addRotation(minutesToRadians(minutes));
+	}
+
+	this.addRotationSeconds = function(seconds) {
+		return this.addRotation(secondsToRadians(seconds));
+	}
+
+	this.addRotationMilliseconds = function(milliseconds) {
+		return this.addRotation(millisecondsToRadians(milliseconds));
+	}
+
+	
 	this.rotateLeft = function ( angle ) {
 
 		if ( angle === undefined ) {
@@ -136,17 +205,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 		scale *= zoomScale;
 
 	};
-
-	this.pan = function ( distance ) {
-
-		distance.transformDirection( this.object.matrix );
-		distance.multiplyScalar( scope.userPanSpeed );
-
-		this.object.position.add( distance );
-		this.center.add( distance );
-
-	};
-
+	
 	this.update = function () {
 
 		var position = this.object.position;
@@ -234,10 +293,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 			zoomStart.set( event.clientX, event.clientY );
 
-		} else if ( event.button === 2 ) {
-
-			state = STATE.PAN;
-
 		}
 
 		document.addEventListener( 'mousemove', onMouseMove, false );
@@ -278,15 +333,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 			zoomStart.copy( zoomEnd );
 
-		} else if ( state === STATE.PAN ) {
-
-			var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-			var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-
-			scope.pan( new THREE.Vector3( - movementX, movementY, 0 ) );
-
 		}
-
 	}
 
 	function onMouseUp( event ) {
@@ -333,7 +380,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 	function onKeyDown( event ) {
 
 		if ( scope.enabled === false ) return;
-		if ( scope.userPan === false ) return;
 		
 		switch ( event.keyCode ) {
 			case scope.keys.UP:
@@ -349,7 +395,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 				scope.rotateRight(0.1);
 				break;
 		}
-
 	}
 
 	this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
