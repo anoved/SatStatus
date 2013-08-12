@@ -60,7 +60,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	/* 
 	 * Returns:
-	 *   camera angle in radians from prime meridian
+	 *   camera angle in radians from prime meridian ("theta")
 	 */
 	this.getRotation = function() {
 		return Math.atan2(this.object.position.z, this.object.position.x);
@@ -70,47 +70,23 @@ THREE.OrbitControls = function ( object, domElement ) {
 	 * Parameter:
 	 *   angle in radians from prime meridian
 	 * 
-	 * Returns:
-	 *   camera angle in radians from prime meridian (wrapped to 0..2pi)
-	 * 
 	 * Results:
 	 *   camera is orbited around earth axis to the requested angle from the
 	 *   prime meridian. Camera radius and equatorial elevation are preserved. 
 	 */
 	this.setRotation = function(angle) {
-		
-		var position = this.object.position;
-		
-		// wrap angle to 0..2PI
-		var theta = angle - (Math.PI * 2) * Math.floor(angle / (Math.PI * 2));
-		
-		// preserve phi (angle above/below equatorial plane)
-		var phi = Math.atan2(Math.sqrt(position.x * position.x + position.z * position.z ), position.y );
-		var radius = position.length();
-		
-		// update the camera position
-		position.x = radius * Math.sin(phi) * Math.cos(theta);
-		position.y = radius * Math.cos(phi);
-		position.z = radius * Math.sin(phi) * Math.sin(theta);
-		
-		// consider utilizing the same phiDelta mechanism the other control
-		// methods use (which is then simply applied by controls.update())
-		
-		return theta;
+		thetaDelta = this.getRotation() - angle;
 	}
 
 	/*
 	 * Parameter:
 	 *   angleDelta, angle in radians to add to current camera orbit angle
 	 * 
-	 * Returns:
-	 *   camera angle in radians from prime meridian
-	 * 
 	 * Results:
 	 *   camera is orbited to its current position plus angleDelta 
 	 */
 	this.addRotation = function(angleDelta) {
-		return this.setRotation(this.getRotation() + angleDelta);
+		thetaDelta -= angleDelta;
 	}
 
 	/*
@@ -118,9 +94,8 @@ THREE.OrbitControls = function ( object, domElement ) {
 	 * 
 	 * Returns radians corresponding to rotation of the specified time period.
 	 */
-	 
 	function daysToRadians(days) {	
-			return Math.PI * 2 * days;
+		return Math.PI * 2 * days;
 	}
 
 	function hoursToRadians(hours) {
@@ -144,25 +119,24 @@ THREE.OrbitControls = function ( object, domElement ) {
 	 * 
 	 * Orbits camera around origin by angle corresponding to specified time period.
 	 */
-	
 	this.addRotationDays = function(days) {
-		return this.addRotation(daysToRadians(days));
+		this.addRotation(daysToRadians(days));
 	}
 
 	this.addRotationHours = function(hours) {
-		return this.addRotation(hoursToRadians(hours));
+		this.addRotation(hoursToRadians(hours));
 	}
 
 	this.addRotationMinutes = function(minutes) {
-		return this.addRotation(minutesToRadians(minutes));
+		this.addRotation(minutesToRadians(minutes));
 	}
 
 	this.addRotationSeconds = function(seconds) {
-		return this.addRotation(secondsToRadians(seconds));
+		this.addRotation(secondsToRadians(seconds));
 	}
 
 	this.addRotationMilliseconds = function(milliseconds) {
-		return this.addRotation(millisecondsToRadians(milliseconds));
+		this.addRotation(millisecondsToRadians(milliseconds));
 	}
 	
 	this.rotateLeft = function ( angle ) {
@@ -205,6 +179,8 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	};
 	
+	// runs every animation frame; issues a "change" event if camera position
+	// changed. change event triggers satscene.render event, and that's that.
 	this.update = function () {
 
 		var position = this.object.position;

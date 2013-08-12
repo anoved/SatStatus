@@ -215,8 +215,7 @@ var Animation = {
 		}
 		var update = new CustomEvent("updateDisplay", {"detail": {"time": this.framedate}});
 		this.framedate = new Date(this.framedate.getTime() + 60000);
-		scene.controls.addRotationMilliseconds(60000);
 		window.dispatchEvent(update);
-		window.dispatchEvent(new CustomEvent("renderEvent"));
+		scene.controls.addRotationMilliseconds(60000);
 	}
 };
