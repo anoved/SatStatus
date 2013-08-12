@@ -7,7 +7,7 @@
 
 THREE.OrbitControls = function ( object, domElement ) {
 
-	this.object = object;
+	this.object = object; // camera
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
 
 	// API
@@ -62,6 +62,78 @@ THREE.OrbitControls = function ( object, domElement ) {
 	var changeEvent = { type: 'change' };
 
 
+	this.getRotation = function() {
+		return Math.atan2(this.object.position.z, this.object.position.x);
+	}
+	
+	this.setRotation = function(angle) {
+		
+		var position = this.object.position;
+		
+		// wrap angle to 0..2PI
+		var theta = angle - (Math.PI * 2) * Math.floor(angle / (Math.PI * 2));
+		
+		// preserve phi (angle above/below equatorial plane)
+		var phi = Math.atan2(Math.sqrt(position.x * position.x + position.z * position.z ), position.y );
+		var radius = position.length();
+		
+		// update the camera position
+		position.x = radius * Math.sin(phi) * Math.cos(theta);
+		position.y = radius * Math.cos(phi);
+		position.z = radius * Math.sin(phi) * Math.sin(theta);
+		
+		// consider utilizing the same phiDelta mechanism the other control
+		// methods use (which is then simply applied by controls.update())
+		
+		return theta;
+	}
+	
+	this.addRotation = function(angleDelta) {
+		return this.setRotation(this.getRotation() + angleDelta);
+	}
+	
+		function daysToRadians(days) {	
+				return Math.PI * 2 * days;
+		}
+
+		function hoursToRadians(hours) {
+			return Math.PI / 12 * hours;
+		}
+
+		function minutesToRadians(minutes) {
+			return Math.PI / 720 * minutes;
+		}
+
+		function secondsToRadians(seconds) {
+			return Math.PI / 43200 * seconds;
+		}
+
+		function millisecondsToRadians(milliseconds) {
+			return Math.PI / 43200000 * milliseconds;
+		}
+
+	
+	this.addRotationDays = function(days) {
+		return this.addRotation(daysToRadians(days));
+	}
+
+	this.addRotationHours = function(hours) {
+		return this.addRotation(hoursToRadians(hours));
+	}
+
+	this.addRotationMinutes = function(minutes) {
+		return this.addRotation(minutesToRadians(minutes));
+	}
+
+	this.addRotationSeconds = function(seconds) {
+		return this.addRotation(secondsToRadians(seconds));
+	}
+
+	this.addRotationMilliseconds = function(milliseconds) {
+		return this.addRotation(millisecondsToRadians(milliseconds));
+	}
+
+	
 	this.rotateLeft = function ( angle ) {
 
 		if ( angle === undefined ) {
@@ -133,7 +205,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 		scale *= zoomScale;
 
 	};
-
+	
 	this.update = function () {
 
 		var position = this.object.position;
