@@ -152,7 +152,11 @@ function SatScene(containerId, initialDate) {
 	 *   stores updateEvent time in this.referenceDate
 	 */
 	this.updateHandler = function(updateEvent) {
+		var last = this.referenceDate.getTime();
 		this.referenceDate = updateEvent.detail.time;
+		
+		// should do this only conditionally if some auto-rotate camera option is set
+		this.controls.addRotationMilliseconds(this.referenceDate.getTime() - last);
 	}
 	
 	this.traces = [];
@@ -232,6 +236,5 @@ var Animation = {
 		var update = new CustomEvent("updateDisplay", {"detail": {"time": this.framedate}});
 		this.framedate = new Date(this.framedate.getTime() + 60000);
 		window.dispatchEvent(update);
-		scene.controls.addRotationMilliseconds(60000);
 	}
 };
