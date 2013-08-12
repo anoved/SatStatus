@@ -61,11 +61,25 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	var changeEvent = { type: 'change' };
 
-
+	/* 
+	 * Returns:
+	 *   camera angle in radians from prime meridian
+	 */
 	this.getRotation = function() {
 		return Math.atan2(this.object.position.z, this.object.position.x);
 	}
 	
+	/*
+	 * Parameter:
+	 *   angle in radians from prime meridian
+	 * 
+	 * Returns:
+	 *   camera angle in radians from prime meridian (wrapped to 0..2pi)
+	 * 
+	 * Results:
+	 *   camera is orbited around earth axis to the requested angle from the
+	 *   prime meridian. Camera radius and equatorial elevation are preserved. 
+	 */
 	this.setRotation = function(angle) {
 		
 		var position = this.object.position;
@@ -87,31 +101,52 @@ THREE.OrbitControls = function ( object, domElement ) {
 		
 		return theta;
 	}
-	
+
+	/*
+	 * Parameter:
+	 *   angleDelta, angle in radians to add to current camera orbit angle
+	 * 
+	 * Returns:
+	 *   camera angle in radians from prime meridian
+	 * 
+	 * Results:
+	 *   camera is orbited to its current position plus angleDelta 
+	 */
 	this.addRotation = function(angleDelta) {
 		return this.setRotation(this.getRotation() + angleDelta);
 	}
+
+	/*
+	 * [time]ToRadians Functions
+	 * 
+	 * Returns radians corresponding to rotation of the specified time period.
+	 */
+	 
+	function daysToRadians(days) {	
+			return Math.PI * 2 * days;
+	}
+
+	function hoursToRadians(hours) {
+		return Math.PI / 12 * hours;
+	}
+
+	function minutesToRadians(minutes) {
+		return Math.PI / 720 * minutes;
+	}
+
+	function secondsToRadians(seconds) {
+		return Math.PI / 43200 * seconds;
+	}
+
+	function millisecondsToRadians(milliseconds) {
+		return Math.PI / 43200000 * milliseconds;
+	}
 	
-		function daysToRadians(days) {	
-				return Math.PI * 2 * days;
-		}
-
-		function hoursToRadians(hours) {
-			return Math.PI / 12 * hours;
-		}
-
-		function minutesToRadians(minutes) {
-			return Math.PI / 720 * minutes;
-		}
-
-		function secondsToRadians(seconds) {
-			return Math.PI / 43200 * seconds;
-		}
-
-		function millisecondsToRadians(milliseconds) {
-			return Math.PI / 43200000 * milliseconds;
-		}
-
+	/*
+	 * addCameraOrbit[Time] methods
+	 * 
+	 * Orbits camera around origin by angle corresponding to specified time period.
+	 */
 	
 	this.addRotationDays = function(days) {
 		return this.addRotation(daysToRadians(days));
