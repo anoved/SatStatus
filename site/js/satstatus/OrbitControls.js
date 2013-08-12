@@ -22,9 +22,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 	this.userRotate = true;
 	this.userRotateSpeed = 1.0;
 
-	this.autoRotate = false;
-	this.autoRotateSpeed = 2.0; // 30 seconds per round when fps is 60
-
 	this.minPolarAngle = 0; // radians
 	this.maxPolarAngle = Math.PI; // radians
 
@@ -167,56 +164,23 @@ THREE.OrbitControls = function ( object, domElement ) {
 	this.addRotationMilliseconds = function(milliseconds) {
 		return this.addRotation(millisecondsToRadians(milliseconds));
 	}
-
 	
 	this.rotateLeft = function ( angle ) {
-
-		if ( angle === undefined ) {
-
-			angle = getAutoRotationAngle();
-
-		}
-
 		thetaDelta -= angle;
-
 	};
-
+	
 	this.rotateRight = function ( angle ) {
-
-		if ( angle === undefined ) {
-
-			angle = getAutoRotationAngle();
-
-		}
-
 		thetaDelta += angle;
-
 	};
-
+	
 	this.rotateUp = function ( angle ) {
-
-		if ( angle === undefined ) {
-
-			angle = getAutoRotationAngle();
-
-		}
-
 		phiDelta -= angle;
-
 	};
-
+	
 	this.rotateDown = function ( angle ) {
-
-		if ( angle === undefined ) {
-
-			angle = getAutoRotationAngle();
-
-		}
-
 		phiDelta += angle;
-
 	};
-
+	
 	this.zoomIn = function ( zoomScale ) {
 
 		if ( zoomScale === undefined ) {
@@ -254,12 +218,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		var phi = Math.atan2( Math.sqrt( offset.x * offset.x + offset.z * offset.z ), offset.y );
 
-		if ( this.autoRotate ) {
-
-			this.rotateLeft( getAutoRotationAngle() );
-
-		}
-
 		theta += thetaDelta;
 		phi += phiDelta;
 
@@ -295,13 +253,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 		}
 
 	};
-
-
-	function getAutoRotationAngle() {
-
-		return 2 * Math.PI / 60 / 60 * scope.autoRotateSpeed;
-
-	}
 
 	function getZoomScale() {
 
