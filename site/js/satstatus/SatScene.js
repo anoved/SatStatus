@@ -160,7 +160,6 @@ function SatScene(containerId, initialDate) {
 	}
 	
 	this.animation = {
-	
 		timer: undefined,
 		
 		framedate: undefined,
@@ -170,10 +169,7 @@ function SatScene(containerId, initialDate) {
 				return;
 			}
 			if (this.framedate === undefined) {
-				// if no animation has occurred yet, begin with the current time
-				// (alternative, begin with the scene's referencedate).
-				// it would make sense for this animation to part of the scene.
-				this.framedate = new Date;
+				this.framedate = this.referenceDate;
 			}
 			this.timer = window.setInterval(this.handler.bind(this), 100);
 			return this.timer;
@@ -205,6 +201,7 @@ function SatScene(containerId, initialDate) {
 			window.dispatchEvent(update);
 		}
 	};
+	this.animation.__proto__ = this;
 	
 	this.traces = [];
 	this.init(containerId);
