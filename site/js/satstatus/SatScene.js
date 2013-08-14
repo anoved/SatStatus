@@ -162,16 +162,14 @@ function SatScene(containerId, initialDate) {
 	this.animation = {
 		timer: undefined,
 		
+		// the real time at which the last animation.update occurred
 		framedate: undefined,
 		
 		start: function() {
 			if (this.timer !== undefined) {
 				return;
 			}
-			if (this.framedate === undefined) {
-				this.framedate = this.referenceDate;
-			}
-			this.timer = window.setInterval(this.handler.bind(this), 100);
+			this.timer = window.setInterval(this.update.bind(this), 100);
 			return this.timer;
 		},
 		
@@ -183,30 +181,31 @@ function SatScene(containerId, initialDate) {
 			this.timer = undefined;
 		},
 		
-		handler: function() {
+		// call directly to advance display in real time relative to last update
+		// if any fast-forward animation has occurred, this will be in future.
+		update: function() {
+			var now = new Date;
 			if (this.timer === undefined) {
-				return;
+				// manual updates progress at real time elapsed since last update
+				var increment = now.getTime() - this.framedate.getTime();
+			} else {
+				// active animation progress at 1 minute per frame
+				var increment = 60000
 			}
-			/*
-			 * this.framedate is the Date we wish to display. If there is an active
-			 * animation, framedate is the timestamp of this frame (incremented at
-			 * a faster rate than realtime, typically). if there is not an active
-			 * animation, framedate is incremented in realtime - but not necessarily
-			 * set to the real "current" time unless no animation has occurred. If
-			 * an animation has occurred, but is no longer animation, updates should
-			 * incremented it by a realtime amount.
-			 */
-			var update = new CustomEvent("updateDisplay", {"detail": {"time": this.framedate}});
-			this.framedate = new Date(this.framedate.getTime() + 60000);
+			this.framedate = now;
+			var updateDate = new Date(this.referenceDate.getTime() + increment);
+			var update = new CustomEvent("updateDisplay", {"detail": {"time": updateDate}});
 			window.dispatchEvent(update);
 		}
 	};
-	this.animation.__proto__ = this;
 	
 	this.traces = [];
 	this.init(containerId);
 	this.animate();
 	this.referenceDate = initialDate || new Date;
+	
+	this.animation.__proto__ = this;
+	this.animation.framedate = this.referenceDate;
 	
 	window.addEventListener("renderEvent", this.render.bind(this), false);
 	window.addEventListener("updateDisplay", this.updateHandler.bind(this), false);
@@ -237,14 +236,3 @@ var SceneUtils = {
 		return [this.kmToDisplayUnits(ecf[0]), this.kmToDisplayUnits(ecf[2]), this.kmToDisplayUnits(-1 * ecf[1])];
 	}
 };
-
-/* temporary test helper. Dispatches an updateDisplay event with current time. */
-/* window.setInterval(UpdateSatTrace, 5000) - run it every five seconds */
-function UpdateDisplay() {
-	var now = new Date;
-	var event = new CustomEvent("updateDisplay", {"detail": {"time": now}});
-	window.dispatchEvent(event);
-	// hacky - updateDisplay handlers may not be done in time for render event.
-	window.dispatchEvent(new CustomEvent("renderEvent"));
-}
-
