@@ -28,7 +28,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 	this.minDistance = 0;
 	this.maxDistance = Infinity;
 
-	this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40 };
+	this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40, IN: 221, OUT: 219 }; // [ and ] zoom
 
 	// internals
 
@@ -355,6 +355,12 @@ THREE.OrbitControls = function ( object, domElement ) {
 				break;
 			case scope.keys.RIGHT:
 				scope.rotateRight(0.1);
+				break;
+			case scope.keys.IN:
+				scope.zoomIn();
+				break;
+			case scope.keys.OUT:
+				scope.zoomOut();
 				break;
 		}
 	}
