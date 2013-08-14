@@ -159,6 +159,53 @@ function SatScene(containerId, initialDate) {
 		this.controls.addRotationMilliseconds(this.referenceDate.getTime() - last);
 	}
 	
+	this.animation = {
+	
+		timer: undefined,
+		
+		framedate: undefined,
+		
+		start: function() {
+			if (this.timer !== undefined) {
+				return;
+			}
+			if (this.framedate === undefined) {
+				// if no animation has occurred yet, begin with the current time
+				// (alternative, begin with the scene's referencedate).
+				// it would make sense for this animation to part of the scene.
+				this.framedate = new Date;
+			}
+			this.timer = window.setInterval(this.handler.bind(this), 100);
+			return this.timer;
+		},
+		
+		stop: function() {
+			if (this.timer === undefined) {
+				return;
+			}
+			window.clearInterval(this.timer);
+			this.timer = undefined;
+		},
+		
+		handler: function() {
+			if (this.timer === undefined) {
+				return;
+			}
+			/*
+			 * this.framedate is the Date we wish to display. If there is an active
+			 * animation, framedate is the timestamp of this frame (incremented at
+			 * a faster rate than realtime, typically). if there is not an active
+			 * animation, framedate is incremented in realtime - but not necessarily
+			 * set to the real "current" time unless no animation has occurred. If
+			 * an animation has occurred, but is no longer animation, updates should
+			 * incremented it by a realtime amount.
+			 */
+			var update = new CustomEvent("updateDisplay", {"detail": {"time": this.framedate}});
+			this.framedate = new Date(this.framedate.getTime() + 60000);
+			window.dispatchEvent(update);
+		}
+	};
+	
 	this.traces = [];
 	this.init(containerId);
 	this.animate();
@@ -204,37 +251,3 @@ function UpdateDisplay() {
 	window.dispatchEvent(new CustomEvent("renderEvent"));
 }
 
-var Animation = {
-
-	timer: undefined,
-	
-	framedate: undefined,
-	
-	start: function() {
-		if (this.timer !== undefined) {
-			return;
-		}
-		if (this.framedate === undefined) {
-			this.framedate = new Date;
-		}
-		this.timer = window.setInterval(this.handler.bind(this), 100);
-		return this.timer;
-	},
-	
-	stop: function() {
-		if (this.timer === undefined) {
-			return;
-		}
-		window.clearInterval(this.timer);
-		this.timer = undefined;
-	},
-	
-	handler: function() {
-		if (this.timer === undefined) {
-			return;
-		}
-		var update = new CustomEvent("updateDisplay", {"detail": {"time": this.framedate}});
-		this.framedate = new Date(this.framedate.getTime() + 60000);
-		window.dispatchEvent(update);
-	}
-};
