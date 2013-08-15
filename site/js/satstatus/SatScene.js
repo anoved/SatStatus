@@ -181,6 +181,23 @@ function SatScene(containerId, initialDate) {
 			this.timer = undefined;
 		},
 		
+		toggle: function() {
+			if (this.timer === undefined) {
+				return this.start();
+			} else {
+				return this.stop();
+			}
+		},
+		
+		keyHandler: function(event) {
+			switch (event.keyCode) {
+				case 32:
+					// space bar
+					this.toggle();
+					break;
+			}
+		},
+		
 		// call directly to advance display in real time relative to last update
 		// if any fast-forward animation has occurred, this will be in future.
 		update: function() {
@@ -206,7 +223,7 @@ function SatScene(containerId, initialDate) {
 	
 	this.animation.__proto__ = this;
 	this.animation.framedate = this.referenceDate;
-	
+	window.addEventListener('keydown', this.animation.keyHandler.bind(this.animation), false);
 	window.addEventListener("renderEvent", this.render.bind(this), false);
 	window.addEventListener("updateDisplay", this.updateHandler.bind(this), false);
 }
