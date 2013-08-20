@@ -20,7 +20,7 @@ function SatScene(containerId, initialDate) {
 		this.container = document.getElementById(containerId);
 		
 		// Camera
-		var aspect = this.container.clientWidth / this.container.clientWidth;
+		var aspect = this.container.clientWidth / this.container.clientHeight;
 		this.camera = new THREE.PerspectiveCamera(75, aspect, 1, 10000);
 		// initial position should be set more logically. If there's no trace
 		// yet, perhaps adding the first trace (or any trace) should update
