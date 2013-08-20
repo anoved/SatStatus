@@ -20,7 +20,7 @@ function SatScene(containerId, initialDate) {
 		this.container = document.getElementById(containerId);
 		
 		// Camera
-		var aspect = this.container.offsetWidth / this.container.offsetHeight;
+		var aspect = this.container.clientWidth / this.container.clientWidth;
 		this.camera = new THREE.PerspectiveCamera(75, aspect, 1, 10000);
 		// initial position should be set more logically. If there's no trace
 		// yet, perhaps adding the first trace (or any trace) should update
@@ -39,7 +39,7 @@ function SatScene(containerId, initialDate) {
 		
 		// Renderer (.CanvasRenderer or .WebGLRenderer)
 		this.renderer = new THREE.WebGLRenderer();
-		this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
+		this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
 			
 		// Attach the renderer to the page.
 		this.container.appendChild(this.renderer.domElement);
@@ -109,10 +109,10 @@ function SatScene(containerId, initialDate) {
 	 * 
 	 */
 	this.onContainerResize = function() {
-		var aspect = this.container.offsetWidth / this.container.offsetHeight;
+		var aspect = this.container.clientWidth / this.container.clientHeight;
 		this.camera.aspect = aspect;
 		this.camera.updateProjectionMatrix();
-		this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
+		this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
 		this.render();
 	}
 	
